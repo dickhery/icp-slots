@@ -74,7 +74,7 @@ module {
   // ICP deposit address for sending funds to a player or the canister.
   public type DepositAccountView = {
     accountId : Common.AccountIdentifier;
-    /** Optional alternate account (house subaccount) for advanced deposits. */
+    /** Optional legacy account identifier retained for compatible clients. */
     legacyAccountId : ?Common.AccountIdentifier;
     canisterId : Principal;
   };
@@ -83,7 +83,9 @@ module {
   public type SyncDepositResult = {
     credited : Common.Tokens;
     balance : Common.Tokens;
+    /** Spendable ICP held by the canonical house vault. */
     ledgerHouse : Common.Tokens;
+    /** ICP detected at the prior malformed, unspendable house address. */
     ledgerDefault : Common.Tokens;
     warning : ?Text;
   };

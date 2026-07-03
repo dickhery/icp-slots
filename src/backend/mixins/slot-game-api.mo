@@ -84,8 +84,8 @@ mixin (
   type CallResult<Ok, Err> = { #ok : Ok; #err : Err };
 
   transient let icpLedger = actor ("ryjl3-tyaaa-aaaaa-aaaba-cai") : actor {
+    account_balance : shared query ({ account : Blob }) -> async LegacyTokens;
     icrc1_balance_of : shared query (IcrcAccount) -> async Nat;
-    icrc1_fee : shared query () -> async Nat;
     icrc1_transfer : shared (IcrcTransferArg) -> async {
       #Ok : Nat;
       #Err : IcrcTransferError;
@@ -128,13 +128,12 @@ mixin (
     };
   };
 
-  func refreshLedgerFee() : async Common.Tokens {
+  func queryLegacyAccountBalance(account : Blob) : async CallResult<Nat, Text> {
     try {
-      let fee = await icpLedger.icrc1_fee();
-      if (fee > 0) cachedLedgerFee := fee;
-      cachedLedgerFee;
-    } catch (_) {
-      cachedLedgerFee;
+      let result = await icpLedger.account_balance({ account });
+      #ok(result.e8s.toNat());
+    } catch (error) {
+      #err("ICP legacy account balance call failed: " # error.message());
     };
   };
 
@@ -503,7 +502,7 @@ mixin (
     };
     houseBalance.balance -= reservedTotal;
     switch (await transferIcrc(
-      ?Accounts.houseSubAccount,
+      null,
       { owner = canisterPrincipal(); subaccount = ?player.subAccount },
       refundAmount,
       nowNat64(),
@@ -515,7 +514,7 @@ mixin (
       case (#ok(refund)) {
         houseBalance.balance := adjustReservedBalance(houseBalance.balance, reservedFee, refund.fee);
         let ledgerDebit = refundAmount + refund.fee;
-        houseBalance.creditedHouseLedger := subtractOrZero(houseBalance.creditedHouseLedger, ledgerDebit);
+        houseBalance.creditedDefaultLedger := subtractOrZero(houseBalance.creditedDefaultLedger, ledgerDebit);
         player.balance += refundAmount;
         player.creditedLedgerBalance += refundAmount;
         "Spin cancelled and the wager was refunded (ledger fees are non-refundable)";
@@ -551,7 +550,7 @@ mixin (
 
     let wagerTransfer = await transferIcrc(
       ?player.subAccount,
-      { owner = canisterPrincipal(); subaccount = ?Accounts.houseSubAccount },
+      { owner = canisterPrincipal(); subaccount = null },
       wager,
       nowNat64(),
     );
@@ -572,7 +571,7 @@ mixin (
       wagerReceipt.fee,
     );
     houseBalance.balance += wager;
-    houseBalance.creditedHouseLedger += wager;
+    houseBalance.creditedDefaultLedger += wager;
 
     if (outcome.won) {
       let desiredReserve = outcome.payout + cachedLedgerFee;
@@ -590,7 +589,7 @@ mixin (
       payoutReserved := desiredReserve;
 
       switch (await transferIcrc(
-        ?Accounts.houseSubAccount,
+        null,
         { owner = canisterPrincipal(); subaccount = ?player.subAccount },
         outcome.payout,
         nowNat64(),
@@ -606,8 +605,8 @@ mixin (
             payoutReserved - outcome.payout,
             payoutReceipt.fee,
           );
-          houseBalance.creditedHouseLedger := subtractOrZero(
-            houseBalance.creditedHouseLedger,
+          houseBalance.creditedDefaultLedger := subtractOrZero(
+            houseBalance.creditedDefaultLedger,
             outcome.payout + payoutReceipt.fee,
           );
           player.balance += outcome.payout;
@@ -758,70 +757,54 @@ mixin (
 
   func executeHouseSync() : async SlotGame.SyncDepositResult {
     let owner = canisterPrincipal();
-    let houseResult = await queryLedgerBalance({
-      owner;
-      subaccount = ?Accounts.houseSubAccount;
-    });
-    let defaultResult = await queryLedgerBalance({ owner; subaccount = null });
+    let houseResult = await queryLedgerBalance({ owner; subaccount = null });
     let onHouse = switch (houseResult) {
       case (#ok(balance)) balance;
       case (#err(message)) {
         return {
           credited = 0;
           balance = houseBalance.balance;
-          ledgerHouse = houseBalance.creditedHouseLedger;
-          ledgerDefault = houseBalance.creditedDefaultLedger;
-          warning = ?message;
-        };
-      };
-    };
-    var onDefault = switch (defaultResult) {
-      case (#ok(balance)) balance;
-      case (#err(message)) {
-        return {
-          credited = 0;
-          balance = houseBalance.balance;
-          ledgerHouse = onHouse;
-          ledgerDefault = houseBalance.creditedDefaultLedger;
+          ledgerHouse = houseBalance.creditedDefaultLedger;
+          ledgerDefault = 0;
           warning = ?message;
         };
       };
     };
 
     let previousHouse = houseBalance.balance;
-    var finalHouse = onHouse;
-    var warning : ?Text = null;
-    if (onDefault > 0) {
-      let fee = await refreshLedgerFee();
-      if (onDefault > fee) {
-        let sweepAmount = subtractOrZero(onDefault, fee);
-        switch (await transferIcrc(
-          null,
-          { owner; subaccount = ?Accounts.houseSubAccount },
-          sweepAmount,
-          nowNat64(),
-        )) {
-          case (#ok(_)) {
-            finalHouse += sweepAmount;
-            onDefault := 0;
-          };
-          case (#err(message)) {
-            warning := ?("Legacy default-account funds could not be swept into the house vault: " # message);
-          };
+    let malformedResult = await queryLegacyAccountBalance(
+      Accounts.malformedHouseAccountIdentifier(owner)
+    );
+    let (malformedBalance, warning) = switch (malformedResult) {
+      case (#ok(balance)) {
+        if (balance > 0) {
+          (
+            balance,
+            ?(
+              "An older build displayed an invalid 33-byte subaccount. " #
+              balance.toText() #
+              " e8s was sent there and cannot be spent by the canister. " #
+              "Do not send additional ICP to the old address."
+            ),
+          );
+        } else {
+          (0, null);
         };
-      } else {
-        warning := ?("The legacy default account contains only fee-sized dust and cannot be swept");
       };
+      case (#err(message)) (0, ?message);
     };
 
-    houseBalance.balance := finalHouse;
-    houseBalance.creditedHouseLedger := finalHouse;
-    houseBalance.creditedDefaultLedger := onDefault;
+    houseBalance.balance := onHouse;
+    // Preserve the split fields for stable-state compatibility. The default
+    // canister account is now the sole canonical house ledger account.
+    houseBalance.creditedHouseLedger := 0;
+    houseBalance.creditedDefaultLedger := onHouse;
     {
-      credited = if (finalHouse > previousHouse) finalHouse - previousHouse else 0;
-      balance = finalHouse;
-      ledgerHouse = finalHouse;
-      ledgerDefault = onDefault;
+      credited = if (onHouse > previousHouse) onHouse - previousHouse else 0;
+      balance = onHouse;
+      ledgerHouse = onHouse;
+      // Retained API field: reports funds at the malformed legacy address.
+      ledgerDefault = malformedBalance;
       warning;
     };
   };
@@ -835,8 +818,8 @@ mixin (
         return {
           credited = 0;
           balance = houseBalance.balance;
-          ledgerHouse = houseBalance.creditedHouseLedger;
-          ledgerDefault = houseBalance.creditedDefaultLedger;
+          ledgerHouse = houseBalance.creditedDefaultLedger;
+          ledgerDefault = 0;
           warning = ?message;
         };
       };
@@ -881,15 +864,15 @@ mixin (
       return #err("Insufficient house balance for the amount plus the ICP ledger fee");
     };
     houseBalance.balance -= reservedTotal;
-    switch (await transferLegacy(?Accounts.houseSubAccount, to, amount, nowNat64())) {
+    switch (await transferLegacy(null, to, amount, nowNat64())) {
       case (#err(message)) {
         houseBalance.balance += reservedTotal;
         #err(message);
       };
       case (#ok(receipt)) {
         houseBalance.balance := adjustReservedBalance(houseBalance.balance, reservedFee, receipt.fee);
-        houseBalance.creditedHouseLedger := subtractOrZero(
-          houseBalance.creditedHouseLedger,
+        houseBalance.creditedDefaultLedger := subtractOrZero(
+          houseBalance.creditedDefaultLedger,
           amount + receipt.fee,
         );
         appendTransaction(caller, {

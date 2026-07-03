@@ -1,32 +1,42 @@
+import Blob "mo:core/Blob";
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 import Common "../types/common";
 
 module {
   /**
-   * Canonical 32-byte subaccount for the house vault (byte 0 = 1, rest zero).
-   * All wagers, payouts, and admin-controlled house transfers use this account.
+   * A previous build accidentally used this 33-byte value as the house
+   * subaccount. It is invalid for ICRC accounts and is retained only so the
+   * admin sync can detect funds sent to the old, unspendable account ID.
    */
-  public let houseSubAccount : Common.SubAccount = "\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00";
+  let malformedHouseSubAccount : Blob = "\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00";
 
   /** Compute the legacy ICP ledger account identifier for owner + subaccount. */
   public func accountIdentifier(
     owner : Principal,
     subaccount : Common.SubAccount,
   ) : Common.AccountIdentifier {
+    if (subaccount.size() != 32) {
+      Runtime.trap("ICP subaccounts must contain exactly 32 bytes");
+    };
     owner.toLedgerAccount(?subaccount);
   };
 
-  /** House vault deposit address (owner = backend canister, subaccount = house). */
+  /**
+   * Canonical house vault: the backend canister's default ledger account.
+   * Player funds remain isolated in their own 32-byte subaccounts.
+   */
   public func houseAccountIdentifier(owner : Principal) : Common.AccountIdentifier {
-    owner.toLedgerAccount(?houseSubAccount);
+    owner.toLedgerAccount(null);
   };
 
-  /**
-   * Canister default ledger account (no subaccount). This is retained only so
-   * deposits sent to the address shown by older builds can be swept into the
-   * canonical house vault.
-   */
+  /** Backward-compatible alias for the canonical house account identifier. */
   public func defaultAccountIdentifier(owner : Principal) : Common.AccountIdentifier {
-    owner.toLedgerAccount(null);
+    houseAccountIdentifier(owner);
+  };
+
+  /** Account ID produced by the prior malformed subaccount bug (diagnostic only). */
+  public func malformedHouseAccountIdentifier(owner : Principal) : Common.AccountIdentifier {
+    owner.toLedgerAccount(?malformedHouseSubAccount);
   };
 };
