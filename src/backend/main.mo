@@ -7,7 +7,7 @@ import Common "types/common";
 import SlotGame "types/slot-game";
 import SlotGameApi "mixins/slot-game-api";
 
-actor {
+actor Backend {
   include MixinViews();
 
   let accessControlState : AccessControl.AccessControlState;
@@ -27,6 +27,7 @@ actor {
   let counters : { var nextSpinId : Nat; var nextTxId : Nat };
 
   include SlotGameApi(
+    Backend,
     accessControlState,
     players,
     spinHistory,

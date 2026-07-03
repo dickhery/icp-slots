@@ -161,6 +161,20 @@ export const mockBackend: backendInterface = {
   async getOrCreatePlayer() {
     return { id: SAMPLE_PRINCIPAL, balance };
   },
+  async getDepositAccount() {
+    const accountId = new Uint8Array(32);
+    accountId.fill(0xab);
+    return { accountId, canisterId: SAMPLE_PRINCIPAL };
+  },
+  async getHouseDepositAccount() {
+    const accountId = new Uint8Array(32);
+    accountId.fill(0xcd);
+    return { accountId, canisterId: SAMPLE_PRINCIPAL };
+  },
+  async syncDeposit() {
+    balance += 5_000_000n;
+    return { credited: 5_000_000n, balance };
+  },
   async getSpinHistory() {
     return spinHistory;
   },

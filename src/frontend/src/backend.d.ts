@@ -8,6 +8,10 @@ export interface None {
 }
 export type Option<T> = Some<T> | None;
 export type Timestamp = bigint;
+export interface DepositAccountView {
+    accountId: AccountIdentifier;
+    canisterId: Principal;
+}
 export interface SpinRecord {
     id: bigint;
     won: boolean;
@@ -96,6 +100,10 @@ export interface SpinOutcome {
     reels: ReelGrid;
     payout: Tokens;
 }
+export interface SyncDepositResult {
+    balance: Tokens;
+    credited: Tokens;
+}
 export interface PlayerView {
     id: UserId;
     balance: Tokens;
@@ -135,12 +143,15 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     getBalance(): Promise<Tokens>;
     getCallerUserRole(): Promise<UserRole>;
+    getDepositAccount(): Promise<DepositAccountView>;
     getHouseBalance(): Promise<Tokens>;
+    getHouseDepositAccount(): Promise<DepositAccountView>;
     getHouseStats(): Promise<HouseStats>;
     getOrCreatePlayer(): Promise<PlayerView>;
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
     spin(activeLines: bigint): Promise<SpinOutcome>;
+    syncDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }

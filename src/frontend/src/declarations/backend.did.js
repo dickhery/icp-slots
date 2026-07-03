@@ -41,6 +41,10 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const DepositAccountView = IDL.Record({
+  'accountId' : AccountIdentifier,
+  'canisterId' : IDL.Principal,
+});
 export const HouseStats = IDL.Record({
   'totalWagered' : Tokens,
   'totalPaidOut' : Tokens,
@@ -94,6 +98,10 @@ export const SpinOutcome = IDL.Record({
   'reels' : ReelGrid,
   'payout' : Tokens,
 });
+export const SyncDepositResult = IDL.Record({
+  'balance' : Tokens,
+  'credited' : Tokens,
+});
 
 export const idlService = IDL.Service({
   '__accessControlState' : IDL.Func([], [IDL.Reserved], ['query']),
@@ -110,13 +118,16 @@ export const idlService = IDL.Service({
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'getBalance' : IDL.Func([], [Tokens], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getDepositAccount' : IDL.Func([], [DepositAccountView], ['query']),
   'getHouseBalance' : IDL.Func([], [Tokens], ['query']),
+  'getHouseDepositAccount' : IDL.Func([], [DepositAccountView], ['query']),
   'getHouseStats' : IDL.Func([], [HouseStats], ['query']),
   'getOrCreatePlayer' : IDL.Func([], [PlayerView], []),
   'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
   'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
+  'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
   'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
 });
 
@@ -155,6 +166,10 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const DepositAccountView = IDL.Record({
+    'accountId' : AccountIdentifier,
+    'canisterId' : IDL.Principal,
   });
   const HouseStats = IDL.Record({
     'totalWagered' : Tokens,
@@ -209,6 +224,10 @@ export const idlFactory = ({ IDL }) => {
     'reels' : ReelGrid,
     'payout' : Tokens,
   });
+  const SyncDepositResult = IDL.Record({
+    'balance' : Tokens,
+    'credited' : Tokens,
+  });
   
   return IDL.Service({
     '__accessControlState' : IDL.Func([], [IDL.Reserved], ['query']),
@@ -229,13 +248,16 @@ export const idlFactory = ({ IDL }) => {
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'getBalance' : IDL.Func([], [Tokens], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getDepositAccount' : IDL.Func([], [DepositAccountView], ['query']),
     'getHouseBalance' : IDL.Func([], [Tokens], ['query']),
+    'getHouseDepositAccount' : IDL.Func([], [DepositAccountView], ['query']),
     'getHouseStats' : IDL.Func([], [HouseStats], ['query']),
     'getOrCreatePlayer' : IDL.Func([], [PlayerView], []),
     'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
     'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
+    'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
     'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
   });
 };

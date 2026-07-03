@@ -1,4 +1,5 @@
 import { BalanceCard } from "@/components/BalanceCard";
+import { DepositAccountCard } from "@/components/DepositAccountCard";
 import { TransactionHistory } from "@/components/TransactionHistory";
 import { TransferForm } from "@/components/TransferForm";
 
@@ -23,6 +24,10 @@ export function WalletPage() {
       {/* Hero balance — full width */}
       <section data-ocid="wallet.balance.section">
         <BalanceCard />
+      </section>
+
+      <section data-ocid="wallet.deposit.section">
+        <DepositAccountCard />
       </section>
 
       {/* Transfer + history — two columns on large screens */}

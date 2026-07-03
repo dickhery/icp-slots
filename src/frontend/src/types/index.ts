@@ -1,10 +1,12 @@
 import type {
   AccountIdentifier,
+  DepositAccountView,
   HouseStats,
   PlayerView,
   ReelGrid,
   SpinOutcome,
   SpinRecord,
+  SyncDepositResult,
   Tokens,
   Transaction,
   TransferResult,
@@ -15,17 +17,26 @@ import { Symbol as SlotSymbol } from "@/backend";
 
 export type {
   AccountIdentifier,
+  DepositAccountView,
   HouseStats,
   PlayerView,
   ReelGrid,
   SpinOutcome,
   SpinRecord,
+  SyncDepositResult,
   Tokens,
   Transaction,
   TransferResult,
   TxKind,
   UserRole,
 };
+
+/** Format a 32-byte ICP account identifier as a 64-character hex string. */
+export function accountIdToHex(accountId: AccountIdentifier): string {
+  return Array.from(accountId)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 export { SlotSymbol };
 

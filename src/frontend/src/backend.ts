@@ -54,6 +54,10 @@ function record_opt_to_undefined<T>(arg: T | null): T | undefined {
 import { ExternalBlob } from "@caffeineai/object-storage";
 export { ExternalBlob } from "@caffeineai/object-storage";
 export type Timestamp = bigint;
+export interface DepositAccountView {
+    accountId: AccountIdentifier;
+    canisterId: Principal;
+}
 export interface SpinRecord {
     id: bigint;
     won: boolean;
@@ -142,6 +146,10 @@ export interface SpinOutcome {
     reels: ReelGrid;
     payout: Tokens;
 }
+export interface SyncDepositResult {
+    balance: Tokens;
+    credited: Tokens;
+}
 export interface PlayerView {
     id: UserId;
     balance: Tokens;
@@ -191,13 +199,16 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     getBalance(): Promise<Tokens>;
     getCallerUserRole(): Promise<UserRole>;
+    getDepositAccount(): Promise<DepositAccountView>;
     getHouseBalance(): Promise<Tokens>;
+    getHouseDepositAccount(): Promise<DepositAccountView>;
     getHouseStats(): Promise<HouseStats>;
     getOrCreatePlayer(): Promise<PlayerView>;
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
     spin(activeLines: bigint): Promise<SpinOutcome>;
+    syncDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }
 import type { AccountIdentifier as _AccountIdentifier, Error as _Error, ReelGrid as _ReelGrid, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, Symbol as _Symbol, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
@@ -399,6 +410,20 @@ export class Backend implements backendInterface {
             return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getDepositAccount(): Promise<DepositAccountView> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDepositAccount();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDepositAccount();
+            return result;
+        }
+    }
     async getHouseBalance(): Promise<Tokens> {
         if (this.processError) {
             try {
@@ -410,6 +435,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getHouseBalance();
+            return result;
+        }
+    }
+    async getHouseDepositAccount(): Promise<DepositAccountView> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getHouseDepositAccount();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getHouseDepositAccount();
             return result;
         }
     }
@@ -495,6 +534,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.spin(arg0);
             return from_candid_SpinOutcome_n25(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async syncDeposit(): Promise<SyncDepositResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.syncDeposit();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.syncDeposit();
+            return result;
         }
     }
     async transfer(arg0: AccountIdentifier, arg1: Tokens): Promise<TransferResult> {

@@ -11,6 +11,10 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export type AccountIdentifier = Uint8Array;
+export interface DepositAccountView {
+  'accountId' : AccountIdentifier,
+  'canisterId' : Principal,
+}
 export type Error = { 'FrontendOriginsNotConfigured' : null } |
   {
     'MixedSsoSources' : {
@@ -63,6 +67,7 @@ export type Symbol = { 'bar' : null } |
   { 'lemon' : null } |
   { 'seven' : null } |
   { 'cherry' : null };
+export interface SyncDepositResult { 'balance' : Tokens, 'credited' : Tokens }
 export type Timestamp = bigint;
 export type Tokens = bigint;
 export interface Transaction {
@@ -98,13 +103,16 @@ export interface _SERVICE {
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'getBalance' : ActorMethod<[], Tokens>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getDepositAccount' : ActorMethod<[], DepositAccountView>,
   'getHouseBalance' : ActorMethod<[], Tokens>,
+  'getHouseDepositAccount' : ActorMethod<[], DepositAccountView>,
   'getHouseStats' : ActorMethod<[], HouseStats>,
   'getOrCreatePlayer' : ActorMethod<[], PlayerView>,
   'getSpinHistory' : ActorMethod<[], Array<SpinRecord>>,
   'getTransactionHistory' : ActorMethod<[], Array<Transaction>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'spin' : ActorMethod<[bigint], SpinOutcome>,
+  'syncDeposit' : ActorMethod<[], SyncDepositResult>,
   'transfer' : ActorMethod<[AccountIdentifier, Tokens], TransferResult>,
 }
 export declare const idlService: IDL.ServiceClass;

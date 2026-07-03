@@ -41,9 +41,18 @@ type NewActor__310080401 =
     var transactions :
       Map__166311111<Principal, List__653618698<Transaction__236262560>>
   };
+type NewPlayer__513285823 =
+  {
+    var balance : Nat;
+    var creditedLedgerBalance : Nat;
+    id : Principal;
+    subAccount : Blob
+  };
 type Node__305750417<K, V> =
   {#internal : Internal__572103086<K, V>; #leaf : Leaf__868027<K, V>};
 type OldActor__856589358 = {};
+type OldPlayer__388683541 =
+  {var balance : Nat; id : Principal; subAccount : Blob};
 type OldSpinRecord__312717468 =
   {
     id : Nat;
@@ -57,6 +66,7 @@ type OldSymbol__584154943 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
 type Player__256311133 =
   {
     var balance : Tokens__151796392;
+    var creditedLedgerBalance : Tokens__151796392;
     id : UserId__653285603;
     subAccount : SubAccount__963172435
   };
@@ -136,7 +146,10 @@ type UserRole__364273487 = {#admin; #guest; #user};
       {
         spinHistory :
           Map__166311111<Principal, List__653618698<SpinRecord__25698017>>
-      }
+      };
+  "20260703_180000_DepositAccounts" :
+    (old : {players : Map__166311111<Principal, OldPlayer__388683541>}) ->
+      {players : Map__166311111<Principal, NewPlayer__513285823>}
 }
 actor  {
   stable accessControlState :

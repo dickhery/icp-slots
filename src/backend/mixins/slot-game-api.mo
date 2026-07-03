@@ -9,8 +9,10 @@ import AccessControl "mo:caffeineai-authorization/access-control";
 import Common "../types/common";
 import SlotGame "../types/slot-game";
 import SlotGameLib "../lib/slot-game";
+import Accounts "../lib/accounts";
 
 mixin (
+  selfActor : actor {},
   accessControlState : AccessControl.AccessControlState,
   players : Map.Map<Common.UserId, SlotGame.Player>,
   spinHistory : Map.Map<Common.UserId, List.List<SlotGame.SpinRecord>>,
@@ -24,7 +26,17 @@ mixin (
   },
   counters : { var nextSpinId : Nat; var nextTxId : Nat },
 ) {
+  type IcrcAccount = { owner : Principal; subaccount : ?Blob };
+
+  transient let icpLedger = actor ("ryjl3-tyaaa-aaaaa-aaaba-cai") : actor {
+    icrc1_balance_of : shared query (IcrcAccount) -> async Nat;
+  };
+
   // ---- Helpers ----
+
+  func canisterPrincipal() : Principal {
+    Principal.fromActor(selfActor);
+  };
 
   // Require the caller to be a registered player; trap otherwise.
   func requirePlayer(caller : Common.UserId) : SlotGame.Player {
@@ -121,6 +133,7 @@ mixin (
           id = caller;
           subAccount = sub;
           var balance = 0 : Common.Tokens;
+          var creditedLedgerBalance = 0 : Common.Tokens;
         };
         players.add(caller, player);
         if (isFirst) {
@@ -137,6 +150,43 @@ mixin (
       case (?p) p.balance;
       case null 0;
     };
+  };
+
+  // Returns the caller's personal ICP deposit account identifier.
+  public query ({ caller }) func getDepositAccount() : async SlotGame.DepositAccountView {
+    switch (players.get(caller)) {
+      case (?p) ({
+        accountId = Accounts.accountIdentifier(canisterPrincipal(), p.subAccount);
+        canisterId = canisterPrincipal();
+      });
+      case null Runtime.trap("Not a registered player — call getOrCreatePlayer first");
+    };
+  };
+
+  // Credits any new ICP sent to the caller's deposit account into playable balance.
+  public shared ({ caller }) func syncDeposit() : async SlotGame.SyncDepositResult {
+    let player = requirePlayer(caller);
+    let ledgerBalance = await icpLedger.icrc1_balance_of({
+      owner = canisterPrincipal();
+      subaccount = ?player.subAccount;
+    });
+    var credited = 0 : Common.Tokens;
+    if (ledgerBalance > player.creditedLedgerBalance) {
+      credited := ledgerBalance - player.creditedLedgerBalance;
+      player.balance += credited;
+      player.creditedLedgerBalance := ledgerBalance;
+      appendTransaction(
+        caller,
+        {
+          id = nextTxId();
+          timestamp = nowTimestamp();
+          kind = #transferIn;
+          amount = credited;
+          counterparty = null;
+        },
+      );
+    };
+    { credited; balance = player.balance };
   };
 
   // ---- Slot gameplay ----
@@ -254,6 +304,17 @@ mixin (
   };
 
   // ---- Admin ----
+
+  // Returns the canister's default ICP deposit account (admin only).
+  public query ({ caller }) func getHouseDepositAccount() : async SlotGame.DepositAccountView {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: admin only");
+    };
+    ({
+      accountId = Accounts.defaultAccountIdentifier(canisterPrincipal());
+      canisterId = canisterPrincipal();
+    });
+  };
 
   // Returns the current house backend ICP balance (admin only).
   public query ({ caller }) func getHouseBalance() : async Common.Tokens {

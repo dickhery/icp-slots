@@ -1,3 +1,4 @@
+import Principal "mo:core/Principal";
 import Common "common";
 
 module {
@@ -60,11 +61,25 @@ module {
     id : Common.UserId;
     subAccount : Common.SubAccount;
     var balance : Common.Tokens;
+    /** Ledger balance already credited to the in-canister playable balance. */
+    var creditedLedgerBalance : Common.Tokens;
   };
 
   // Public (shared) view of a player.
   public type PlayerView = {
     id : Common.UserId;
+    balance : Common.Tokens;
+  };
+
+  // ICP deposit address for sending funds to a player or the canister.
+  public type DepositAccountView = {
+    accountId : Common.AccountIdentifier;
+    canisterId : Principal;
+  };
+
+  // Result of syncing ledger deposits into the playable balance.
+  public type SyncDepositResult = {
+    credited : Common.Tokens;
     balance : Common.Tokens;
   };
 

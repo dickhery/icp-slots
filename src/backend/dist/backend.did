@@ -28,6 +28,11 @@ type Transaction =
  };
 type Tokens = nat;
 type Timestamp = nat;
+type SyncDepositResult = 
+ record {
+   balance: Tokens;
+   credited: Tokens;
+ };
 type Symbol = 
  variant {
    bar;
@@ -100,6 +105,11 @@ type Error =
    UnknownNonce;
    UntrustedSsoSource: record {domain: text;};
  };
+type DepositAccountView = 
+ record {
+   accountId: AccountIdentifier;
+   canisterId: principal;
+ };
 type AccountIdentifier = blob;
 service : {
   __accessControlState: () -> (reserved) query;
@@ -116,12 +126,15 @@ service : {
   assignCallerUserRole: (user: principal, role: UserRole) -> ();
   getBalance: () -> (Tokens) query;
   getCallerUserRole: () -> (UserRole) query;
+  getDepositAccount: () -> (DepositAccountView) query;
   getHouseBalance: () -> (Tokens) query;
+  getHouseDepositAccount: () -> (DepositAccountView) query;
   getHouseStats: () -> (HouseStats) query;
   getOrCreatePlayer: () -> (PlayerView);
   getSpinHistory: () -> (vec SpinRecord) query;
   getTransactionHistory: () -> (vec Transaction) query;
   isCallerAdmin: () -> (bool) query;
   spin: (activeLines: nat) -> (SpinOutcome);
+  syncDeposit: () -> (SyncDepositResult);
   transfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);
 }

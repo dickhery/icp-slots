@@ -1,5 +1,6 @@
 import { AdminTransferForm } from "@/components/AdminTransferForm";
 import { HouseBalanceCard } from "@/components/HouseBalanceCard";
+import { HouseDepositCard } from "@/components/HouseDepositCard";
 import { HouseStatsPanel } from "@/components/HouseStatsPanel";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,8 +78,10 @@ export function AdminPage() {
         </p>
       </div>
 
-      {/* House balance — prominent */}
-      <HouseBalanceCard />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <HouseBalanceCard />
+        <HouseDepositCard />
+      </div>
 
       {/* Aggregate stats */}
       <HouseStatsPanel />

@@ -6,7 +6,8 @@
     "Internet Identity sign-in with per-user ICP account provisioning",
     "0.01 ICP per active payline with instant prize payouts to player accounts",
     "98% payback rate with 2% house edge retained in the backend",
-    "Player wallet with balance display and ICP transfers to external addresses",
+    "Player wallet with deposit account ID, balance sync, and ICP transfers",
+    "Admin deposit account ID for funding the backend canister with ICP",
     "Admin panel for the first user with house balance control and transfers",
     "Multi-line win evaluation with payline overlays and celebration animations"
   ],

@@ -4,10 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import type {
+  DepositAccountView,
   HouseStats,
   PlayerView,
   SpinOutcome,
   SpinRecord,
+  SyncDepositResult,
   Tokens,
   Transaction,
   TransferResult,
@@ -72,6 +74,45 @@ export function useIsAdmin() {
     },
     enabled: !!actor && !isFetching,
   });
+}
+
+/** The caller's ICP deposit account (for topping up playable balance). */
+export function useDepositAccount() {
+  const { actor, isFetching } = useBackend();
+  return useQuery<DepositAccountView>({
+    queryKey: ["depositAccount"],
+    queryFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.getDepositAccount();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+/** Admin: the canister's default ICP deposit account. */
+export function useHouseDepositAccount() {
+  const { actor, isFetching } = useBackend();
+  return useQuery<DepositAccountView>({
+    queryKey: ["houseDepositAccount"],
+    queryFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.getHouseDepositAccount();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+/** Sync ledger deposits into the caller's playable balance. */
+export function useSyncDeposit() {
+  const { actor } = useBackend();
+  const queryClient = useQueryClient();
+  return useCallback(async (): Promise<SyncDepositResult> => {
+    if (!actor) throw new Error("Actor not ready");
+    const result = await actor.syncDeposit();
+    await queryClient.invalidateQueries({ queryKey: ["balance"] });
+    await queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
+    return result;
+  }, [actor, queryClient]);
 }
 
 /** Recent spin history for the signed-in player. */
