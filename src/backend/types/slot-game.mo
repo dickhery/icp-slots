@@ -74,6 +74,8 @@ module {
   // ICP deposit address for sending funds to a player or the canister.
   public type DepositAccountView = {
     accountId : Common.AccountIdentifier;
+    /** Legacy default account when funding used the canister principal only. */
+    legacyAccountId : ?Common.AccountIdentifier;
     canisterId : Principal;
   };
 
@@ -81,6 +83,8 @@ module {
   public type SyncDepositResult = {
     credited : Common.Tokens;
     balance : Common.Tokens;
+    ledgerHouse : Common.Tokens;
+    ledgerDefault : Common.Tokens;
   };
 
   // Aggregate house stats (admin view).

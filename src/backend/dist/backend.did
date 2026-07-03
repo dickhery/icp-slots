@@ -32,6 +32,8 @@ type SyncDepositResult =
  record {
    balance: Tokens;
    credited: Tokens;
+   ledgerDefault: Tokens;
+   ledgerHouse: Tokens;
  };
 type Symbol = 
  variant {
@@ -109,6 +111,7 @@ type DepositAccountView =
  record {
    accountId: AccountIdentifier;
    canisterId: principal;
+   legacyAccountId: opt AccountIdentifier;
  };
 type AccountIdentifier = blob;
 service : {

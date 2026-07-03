@@ -17,6 +17,57 @@ import { accountIdToHex, formatIcp } from "@/types";
 import { Building2, Check, Copy, Landmark, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
+function CopyableAccountId({
+  label,
+  hex,
+  copyLabel,
+  dataOcid,
+}: {
+  label: string;
+  hex: string;
+  copyLabel: string;
+  dataOcid: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!hex) return;
+    await navigator.clipboard.writeText(hex);
+    setCopied(true);
+    toast.success(copyLabel);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <div className="flex items-start gap-2">
+        <code
+          className="flex-1 break-all rounded-lg border border-border/60 bg-background/60 px-3 py-2 font-mono text-xs leading-relaxed text-foreground"
+          data-ocid={dataOcid}
+        >
+          {hex}
+        </code>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={handleCopy}
+          aria-label={`Copy ${label.toLowerCase()}`}
+        >
+          {copied ? (
+            <Check className="size-4 text-success" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Admin card showing the house vault deposit address and a sync control
  * that credits ICP from the ledger into the playable house balance.
@@ -24,19 +75,13 @@ import { toast } from "sonner";
 export function HouseDepositCard() {
   const { data, isLoading, isError } = useHouseDepositAccount();
   const syncHouseDeposit = useSyncHouseDeposit();
-  const [copied, setCopied] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  const hex = data ? accountIdToHex(data.accountId) : "";
+  const houseHex = data ? accountIdToHex(data.accountId) : "";
+  const legacyHex = data?.legacyAccountId
+    ? accountIdToHex(data.legacyAccountId)
+    : "";
   const canisterText = data?.canisterId.toString() ?? "";
-
-  const handleCopy = async () => {
-    if (!hex) return;
-    await navigator.clipboard.writeText(hex);
-    setCopied(true);
-    toast.success("House account ID copied");
-    window.setTimeout(() => setCopied(false), 2000);
-  };
 
   const handleSync = async () => {
     setSyncing(true);
@@ -44,12 +89,15 @@ export function HouseDepositCard() {
       const result = await syncHouseDeposit();
       if (result.credited > 0n) {
         toast.success("House funded", {
-          description: `+${formatIcp(result.credited)} ICP added to house balance.`,
+          description: `+${formatIcp(result.credited)} ICP added to house balance (${formatIcp(result.balance)} ICP total).`,
         });
       } else {
-        toast.message("No new deposits", {
+        const onLedger = result.ledgerHouse + result.ledgerDefault;
+        toast.message("No new deposits credited", {
           description:
-            "Send ICP to the house account ID below, then sync again.",
+            onLedger > 0n
+              ? `Ledger holds ${formatIcp(onLedger)} ICP (${formatIcp(result.ledgerHouse)} on house account, ${formatIcp(result.ledgerDefault)} on legacy). Already synced.`
+              : "Send ICP to the house account ID below, wait for confirmation, then sync again.",
         });
       }
     } catch (e) {
@@ -80,50 +128,39 @@ export function HouseDepositCard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            House account identifier
+        {isLoading ? (
+          <Skeleton className="h-24 w-full" />
+        ) : isError || !houseHex ? (
+          <p
+            className="text-sm text-destructive"
+            data-ocid="admin.house_deposit.error"
+          >
+            Could not load house deposit address.
           </p>
-          {isLoading ? (
-            <Skeleton className="h-10 w-full" />
-          ) : isError || !hex ? (
-            <p
-              className="text-sm text-destructive"
-              data-ocid="admin.house_deposit.error"
-            >
-              Could not load house deposit address.
-            </p>
-          ) : (
-            <div className="flex items-start gap-2">
-              <code
-                className="flex-1 break-all rounded-lg border border-border/60 bg-background/60 px-3 py-2 font-mono text-xs leading-relaxed text-foreground"
-                data-ocid="admin.house_deposit.account_id"
-              >
-                {hex}
-              </code>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={handleCopy}
-                data-ocid="admin.house_deposit.copy_button"
-                aria-label="Copy house account identifier"
-              >
-                {copied ? (
-                  <Check className="size-4 text-success" />
-                ) : (
-                  <Copy className="size-4" />
-                )}
-              </Button>
-            </div>
-          )}
-        </div>
+        ) : (
+          <>
+            <CopyableAccountId
+              label="House vault account identifier (use this)"
+              hex={houseHex}
+              copyLabel="House account ID copied"
+              dataOcid="admin.house_deposit.account_id"
+            />
+            {legacyHex ? (
+              <CopyableAccountId
+                label="Legacy default account (principal-only deposits)"
+                hex={legacyHex}
+                copyLabel="Legacy account ID copied"
+                dataOcid="admin.house_deposit.legacy_account_id"
+              />
+            ) : null}
+          </>
+        )}
 
         {canisterText && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Building2 className="size-3.5 shrink-0" aria-hidden="true" />
             <span>
-              Canister{" "}
+              Backend canister{" "}
               <span className="font-mono text-foreground/80">
                 {canisterText}
               </span>
@@ -132,9 +169,11 @@ export function HouseDepositCard() {
         )}
 
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          This address is dedicated to the house pool (separate from player
-          deposits). If you funded the canister before this update, tap sync —
-          it will also pick up ICP on the previous default account.
+          In your wallet, paste the{" "}
+          <strong>house vault account identifier</strong> as the destination
+          (not the canister principal). After the transfer confirms on the
+          ledger, tap sync to move funds into the playable house pool. Deposits
+          sent to the legacy default account are also picked up.
         </p>
 
         <Button

@@ -42,6 +42,7 @@ export const UserRole = IDL.Variant({
   'guest' : IDL.Null,
 });
 export const DepositAccountView = IDL.Record({
+  'legacyAccountId' : IDL.Opt(AccountIdentifier),
   'accountId' : AccountIdentifier,
   'canisterId' : IDL.Principal,
 });
@@ -100,6 +101,8 @@ export const SpinOutcome = IDL.Record({
 });
 export const SyncDepositResult = IDL.Record({
   'balance' : Tokens,
+  'ledgerDefault' : Tokens,
+  'ledgerHouse' : Tokens,
   'credited' : Tokens,
 });
 
@@ -169,6 +172,7 @@ export const idlFactory = ({ IDL }) => {
     'guest' : IDL.Null,
   });
   const DepositAccountView = IDL.Record({
+    'legacyAccountId' : IDL.Opt(AccountIdentifier),
     'accountId' : AccountIdentifier,
     'canisterId' : IDL.Principal,
   });
@@ -227,6 +231,8 @@ export const idlFactory = ({ IDL }) => {
   });
   const SyncDepositResult = IDL.Record({
     'balance' : Tokens,
+    'ledgerDefault' : Tokens,
+    'ledgerHouse' : Tokens,
     'credited' : Tokens,
   });
   

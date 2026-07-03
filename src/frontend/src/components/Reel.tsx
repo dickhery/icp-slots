@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import type { SlotSymbol } from "@/types";
@@ -12,14 +12,14 @@ const STRIP_LENGTH = 30;
 
 const CELL_CLASS = "grid h-20 w-20 place-items-center sm:h-[5.833rem] sm:w-24";
 
+const ROW_KEYS = ["top", "middle", "bottom"] as const;
+
 interface ReelProps {
   /** Final symbols to land on: [top, middle, bottom]. */
   targets: [SlotSymbol, SlotSymbol, SlotSymbol];
   spinning: boolean;
   index: number;
   durationMs?: number;
-  /** Changes on each completed spin to restart reel animation state. */
-  spinKey?: number;
 }
 
 function buildStrip(
@@ -39,35 +39,15 @@ export function Reel({
   spinning,
   index,
   durationMs = 900,
-  spinKey = 0,
 }: ReelProps) {
   const [strip, setStrip] = useState<SlotSymbol[]>(() => buildStrip(targets));
   const [phase, setPhase] = useState<"rest" | "spin" | "land">("rest");
   const [cellHeight, setCellHeight] = useState(80);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const cellRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => () => resizeObserverRef.current?.disconnect(), []);
-
-  const measureRef = useCallback((node: HTMLDivElement | null) => {
-    resizeObserverRef.current?.disconnect();
-    resizeObserverRef.current = null;
-    if (!node) return;
-
-    const updateHeight = () => {
-      setCellHeight(node.getBoundingClientRect().height);
-    };
-
-    updateHeight();
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(node);
-    resizeObserverRef.current = observer;
-  }, []);
-
-  // spinKey restarts animation when a new outcome arrives during an active spin.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: spinKey intentionally triggers reel reset
+  // biome-ignore lint/correctness/useExhaustiveDependencies: animate once when spinning flips true; targets are already set
   useEffect(() => {
     if (!spinning) {
-      setStrip(buildStrip(targets));
       setPhase("rest");
       return;
     }
@@ -77,12 +57,25 @@ export function Reel({
     const landDelay = durationMs + index * 180;
     const landTimer = window.setTimeout(() => setPhase("land"), landDelay);
     return () => window.clearTimeout(landTimer);
-  }, [spinning, targets, index, durationMs, spinKey]);
+  }, [spinning, durationMs, index]);
 
-  const visibleRows = 3;
-  const restOffset = (strip.length - visibleRows) * cellHeight;
+  useEffect(() => {
+    const el = cellRef.current;
+    if (!el) return;
 
-  if (!spinning && phase === "rest") {
+    const updateHeight = () => {
+      setCellHeight(el.getBoundingClientRect().height);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(el);
+    return () => observer.disconnect();
+  });
+
+  const restOffset = (strip.length - 3) * cellHeight;
+
+  if (!spinning) {
     return (
       <div
         className="relative h-[15rem] w-20 overflow-hidden rounded-lg reel-edge ring-1 ring-border/60 sm:h-[17.5rem] sm:w-24"
@@ -95,9 +88,8 @@ export function Reel({
             const meta = SYMBOL_META[sym];
             return (
               <div
-                // biome-ignore lint/suspicious/noArrayIndexKey: fixed 3-row reel positions
-                key={`${spinKey}-rest-${i}`}
-                ref={i === 0 ? measureRef : undefined}
+                key={`rest-${ROW_KEYS[i]}-${sym}`}
+                ref={i === 0 ? cellRef : undefined}
                 className={CELL_CLASS}
               >
                 <SymbolCell symbol={sym} meta={meta} />
@@ -123,13 +115,10 @@ export function Reel({
           phase === "spin" && "animate-reel-spin",
         )}
         style={
-          phase === "land" || phase === "rest"
+          phase === "land"
             ? {
                 transform: `translateY(-${restOffset}px)`,
-                transition:
-                  phase === "land"
-                    ? `transform ${durationMs + index * 180}ms cubic-bezier(0.16, 1, 0.3, 1)`
-                    : "none",
+                transition: `transform ${durationMs + index * 180}ms cubic-bezier(0.16, 1, 0.3, 1)`,
               }
             : undefined
         }
@@ -139,9 +128,8 @@ export function Reel({
           const isFinal = i >= strip.length - 3;
           return (
             <div
-              // biome-ignore lint/suspicious/noArrayIndexKey: strip index is stable per spinKey
-              key={`${spinKey}-${i}`}
-              ref={i === 0 ? measureRef : undefined}
+              key={`spin-${sym}-${strip.length - i}`}
+              ref={i === 0 ? cellRef : undefined}
               className={cn(
                 CELL_CLASS,
                 isFinal && phase === "land" && "animate-win-flash",

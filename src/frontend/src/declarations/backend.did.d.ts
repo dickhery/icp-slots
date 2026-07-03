@@ -12,6 +12,7 @@ import type { Principal } from '@icp-sdk/core/principal';
 
 export type AccountIdentifier = Uint8Array;
 export interface DepositAccountView {
+  'legacyAccountId' : [] | [AccountIdentifier],
   'accountId' : AccountIdentifier,
   'canisterId' : Principal,
 }
@@ -67,7 +68,12 @@ export type Symbol = { 'bar' : null } |
   { 'lemon' : null } |
   { 'seven' : null } |
   { 'cherry' : null };
-export interface SyncDepositResult { 'balance' : Tokens, 'credited' : Tokens }
+export interface SyncDepositResult {
+  'balance' : Tokens,
+  'ledgerDefault' : Tokens,
+  'ledgerHouse' : Tokens,
+  'credited' : Tokens,
+}
 export type Timestamp = bigint;
 export type Tokens = bigint;
 export interface Transaction {

@@ -175,7 +175,8 @@ module {
   };
 
   public func toSpinHistory(records : List.List<SlotGame.SpinRecord>) : [SlotGame.SpinRecord] {
-    records.toArray();
+    let arr = records.toArray();
+    Array.tabulate(arr.size(), func(i) { arr[arr.size() - 1 - i] });
   };
 
   public func toTransactionHistory(txs : List.List<SlotGame.Transaction>) : [SlotGame.Transaction] {

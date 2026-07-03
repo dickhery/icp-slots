@@ -43,7 +43,6 @@ export function SlotMachine() {
   const [winTrigger, setWinTrigger] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const spinIdRef = useRef(0);
-  const [spinKey, setSpinKey] = useState(0);
 
   const reelDurationMs = 900;
   const reelStaggerMs = 180;
@@ -58,13 +57,14 @@ export function SlotMachine() {
     setError(null);
     setWon(false);
     setWinningLines([]);
-    setSpinning(true);
     const id = ++spinIdRef.current;
     try {
       const outcome = await spin(activeLines);
       if (id !== spinIdRef.current) return;
+
       setDisplay(outcome.reels as ReelGrid);
-      setSpinKey(id);
+      setSpinning(true);
+
       window.setTimeout(() => {
         if (id !== spinIdRef.current) return;
         setSpinning(false);
@@ -148,7 +148,6 @@ export function SlotMachine() {
               }
               spinning={spinning}
               durationMs={reelDurationMs}
-              spinKey={spinKey}
             />
           ))}
         </div>

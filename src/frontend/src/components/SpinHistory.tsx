@@ -14,21 +14,24 @@ interface SpinHistoryProps {
   isLoading: boolean;
 }
 
-/** Compact 5×3 grid preview for a spin record. */
+/** Compact 5×3 grid preview for a spin record (columns match the cabinet reels). */
 function MiniGrid({ reels }: { reels: SpinRecord["reels"] }) {
   return (
-    <div className="grid grid-cols-5 gap-0.5">
-      {reels.map((column, colIdx) =>
-        column.map((sym) => (
-          <span
-            key={`${colIdx}-${sym}`}
-            className="grid size-6 place-items-center rounded bg-background/70 text-xs font-bold sm:size-7 sm:text-sm"
-            aria-label={SYMBOL_META[sym].label}
-          >
-            {SYMBOL_META[sym].glyph}
-          </span>
-        )),
-      )}
+    <div className="flex gap-0.5">
+      {reels.map((column, colIdx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: five fixed reel columns
+        <div key={`col-${colIdx}`} className="flex flex-col gap-0.5">
+          {column.map((sym, rowIdx) => (
+            <span
+              key={`${colIdx}-${rowIdx}-${sym}`}
+              className="grid size-6 place-items-center rounded bg-background/70 text-xs font-bold sm:size-7 sm:text-sm"
+              aria-label={SYMBOL_META[sym].label}
+            >
+              {SYMBOL_META[sym].glyph}
+            </span>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

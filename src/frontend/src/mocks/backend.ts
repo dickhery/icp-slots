@@ -169,15 +169,27 @@ export const mockBackend: backendInterface = {
   async getHouseDepositAccount() {
     const accountId = new Uint8Array(32);
     accountId[0] = 0xcd;
-    return { accountId, canisterId: SAMPLE_PRINCIPAL };
+    const legacyAccountId = new Uint8Array(32);
+    legacyAccountId[0] = 0xef;
+    return { accountId, legacyAccountId, canisterId: SAMPLE_PRINCIPAL };
   },
   async syncHouseDeposit() {
     houseBalance += 10_000_000n;
-    return { credited: 10_000_000n, balance: houseBalance };
+    return {
+      credited: 10_000_000n,
+      balance: houseBalance,
+      ledgerHouse: 10_000_000n,
+      ledgerDefault: 0n,
+    };
   },
   async syncDeposit() {
     balance += 5_000_000n;
-    return { credited: 5_000_000n, balance };
+    return {
+      credited: 5_000_000n,
+      balance,
+      ledgerHouse: 0n,
+      ledgerDefault: 0n,
+    };
   },
   async getSpinHistory() {
     return spinHistory;

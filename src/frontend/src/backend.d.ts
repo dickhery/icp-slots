@@ -9,6 +9,7 @@ export interface None {
 export type Option<T> = Some<T> | None;
 export type Timestamp = bigint;
 export interface DepositAccountView {
+    legacyAccountId?: AccountIdentifier;
     accountId: AccountIdentifier;
     canisterId: Principal;
 }
@@ -102,6 +103,8 @@ export interface SpinOutcome {
 }
 export interface SyncDepositResult {
     balance: Tokens;
+    ledgerDefault: Tokens;
+    ledgerHouse: Tokens;
     credited: Tokens;
 }
 export interface PlayerView {
