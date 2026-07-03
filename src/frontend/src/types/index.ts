@@ -31,9 +31,23 @@ export type {
   UserRole,
 };
 
+/** Normalize candid account identifier bytes to a 32-byte Uint8Array. */
+export function normalizeAccountId(accountId: AccountIdentifier): Uint8Array {
+  const bytes =
+    accountId instanceof Uint8Array
+      ? accountId
+      : Uint8Array.from(accountId as ArrayLike<number>);
+  if (bytes.length !== 32) {
+    throw new Error(
+      `Invalid account identifier length: ${bytes.length} (expected 32)`,
+    );
+  }
+  return bytes;
+}
+
 /** Format a 32-byte ICP account identifier as a 64-character hex string. */
 export function accountIdToHex(accountId: AccountIdentifier): string {
-  return Array.from(accountId)
+  return Array.from(normalizeAccountId(accountId))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }

@@ -76,28 +76,43 @@ export function HouseDepositCard() {
   const { data, isLoading, isError } = useHouseDepositAccount();
   const syncHouseDeposit = useSyncHouseDeposit();
   const [syncing, setSyncing] = useState(false);
+  const [lastLedger, setLastLedger] = useState<{
+    default: bigint;
+    house: bigint;
+  } | null>(null);
 
-  const houseHex = data ? accountIdToHex(data.accountId) : "";
-  const legacyHex = data?.legacyAccountId
-    ? accountIdToHex(data.legacyAccountId)
-    : "";
+  let primaryHex = "";
+  let alternateHex = "";
+  try {
+    primaryHex = data ? accountIdToHex(data.accountId) : "";
+    alternateHex = data?.legacyAccountId
+      ? accountIdToHex(data.legacyAccountId)
+      : "";
+  } catch (e) {
+    console.error("Invalid house deposit account identifier", e);
+  }
+
   const canisterText = data?.canisterId.toString() ?? "";
 
   const handleSync = async () => {
     setSyncing(true);
     try {
       const result = await syncHouseDeposit();
+      setLastLedger({
+        default: result.ledgerDefault,
+        house: result.ledgerHouse,
+      });
       if (result.credited > 0n) {
         toast.success("House funded", {
           description: `+${formatIcp(result.credited)} ICP added to house balance (${formatIcp(result.balance)} ICP total).`,
         });
       } else {
-        const onLedger = result.ledgerHouse + result.ledgerDefault;
+        const onLedger = result.ledgerDefault + result.ledgerHouse;
         toast.message("No new deposits credited", {
           description:
             onLedger > 0n
-              ? `Ledger holds ${formatIcp(onLedger)} ICP (${formatIcp(result.ledgerHouse)} on house account, ${formatIcp(result.ledgerDefault)} on legacy). Already synced.`
-              : "Send ICP to the house account ID below, wait for confirmation, then sync again.",
+              ? `Ledger holds ${formatIcp(onLedger)} ICP (${formatIcp(result.ledgerDefault)} default, ${formatIcp(result.ledgerHouse)} house subaccount). Tap sync after each new transfer.`
+              : "No ICP detected on the ledger yet. Send to the account ID above, wait for confirmation, then sync again.",
         });
       }
     } catch (e) {
@@ -122,7 +137,7 @@ export function HouseDepositCard() {
               Fund House Balance
             </CardTitle>
             <CardDescription className="text-xs">
-              Send ICP to the house vault account, then sync
+              Send ICP to the account ID below, then sync
             </CardDescription>
           </div>
         </div>
@@ -130,26 +145,26 @@ export function HouseDepositCard() {
       <CardContent className="space-y-4">
         {isLoading ? (
           <Skeleton className="h-24 w-full" />
-        ) : isError || !houseHex ? (
+        ) : isError || !primaryHex ? (
           <p
             className="text-sm text-destructive"
             data-ocid="admin.house_deposit.error"
           >
-            Could not load house deposit address.
+            Could not load house deposit address. Sign in as admin and refresh.
           </p>
         ) : (
           <>
             <CopyableAccountId
-              label="House vault account identifier (use this)"
-              hex={houseHex}
-              copyLabel="House account ID copied"
+              label="House deposit account identifier (paste into your wallet)"
+              hex={primaryHex}
+              copyLabel="House deposit account ID copied"
               dataOcid="admin.house_deposit.account_id"
             />
-            {legacyHex ? (
+            {alternateHex ? (
               <CopyableAccountId
-                label="Legacy default account (principal-only deposits)"
-                hex={legacyHex}
-                copyLabel="Legacy account ID copied"
+                label="Alternate house subaccount (only if directed here)"
+                hex={alternateHex}
+                copyLabel="Alternate account ID copied"
                 dataOcid="admin.house_deposit.legacy_account_id"
               />
             ) : null}
@@ -168,12 +183,19 @@ export function HouseDepositCard() {
           </div>
         )}
 
+        {lastLedger && (
+          <p className="rounded-md border border-border/50 bg-background/50 px-3 py-2 font-mono text-[11px] text-muted-foreground">
+            Last ledger check: {formatIcp(lastLedger.default)} ICP default ·{" "}
+            {formatIcp(lastLedger.house)} ICP house subaccount
+          </p>
+        )}
+
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          In your wallet, paste the{" "}
-          <strong>house vault account identifier</strong> as the destination
-          (not the canister principal). After the transfer confirms on the
-          ledger, tap sync to move funds into the playable house pool. Deposits
-          sent to the legacy default account are also picked up.
+          In NNS, Oisy, or another ICP wallet, choose <em>Send ICP</em> and
+          paste the 64-character account identifier above as the destination. Do
+          not enter the canister principal alone — that is a different address.
+          After the transfer confirms, tap sync to credit the playable house
+          pool.
         </p>
 
         <Button

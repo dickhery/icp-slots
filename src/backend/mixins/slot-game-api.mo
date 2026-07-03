@@ -33,7 +33,7 @@ mixin (
   type IcrcAccount = { owner : Principal; subaccount : ?Blob };
 
   transient let icpLedger = actor ("ryjl3-tyaaa-aaaaa-aaaba-cai") : actor {
-    icrc1_balance_of : shared query (IcrcAccount) -> async Nat;
+    icrc1_balance_of : shared (IcrcAccount) -> async Nat;
   };
 
   // ---- Helpers ----
@@ -335,9 +335,11 @@ mixin (
       Runtime.trap("Unauthorized: admin only");
     };
     let owner = canisterPrincipal();
+    // Primary address is the canister default ledger account — the standard
+    // destination when funding a canister from NNS, Oisy, or other ICP wallets.
     ({
-      accountId = Accounts.houseAccountIdentifier(owner);
-      legacyAccountId = ?Accounts.defaultAccountIdentifier(owner);
+      accountId = Accounts.defaultAccountIdentifier(owner);
+      legacyAccountId = ?Accounts.houseAccountIdentifier(owner);
       canisterId = owner;
     });
   };

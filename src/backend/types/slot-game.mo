@@ -74,7 +74,7 @@ module {
   // ICP deposit address for sending funds to a player or the canister.
   public type DepositAccountView = {
     accountId : Common.AccountIdentifier;
-    /** Legacy default account when funding used the canister principal only. */
+    /** Optional alternate account (house subaccount) for advanced deposits. */
     legacyAccountId : ?Common.AccountIdentifier;
     canisterId : Principal;
   };
