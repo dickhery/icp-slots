@@ -20,7 +20,7 @@ export function useBalance(): BalanceState {
 
   return {
     e8s: data ?? null,
-    formatted: data ? `${formatIcp(data)} ICP` : "—",
+    formatted: data !== undefined ? `${formatIcp(data)} ICP` : "—",
     isLoading,
     isRefetching,
     isError,

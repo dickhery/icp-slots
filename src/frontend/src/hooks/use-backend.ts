@@ -191,11 +191,13 @@ export function useSpin() {
       if (result.__kind__ === "err") {
         throw new Error(result.err);
       }
-      await queryClient.invalidateQueries({ queryKey: ["balance"] });
-      await queryClient.invalidateQueries({ queryKey: ["spinHistory"] });
-      await queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
-      await queryClient.invalidateQueries({ queryKey: ["houseBalance"] });
-      await queryClient.invalidateQueries({ queryKey: ["houseStats"] });
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["balance"] }),
+        queryClient.invalidateQueries({ queryKey: ["spinHistory"] }),
+        queryClient.invalidateQueries({ queryKey: ["transactionHistory"] }),
+        queryClient.invalidateQueries({ queryKey: ["houseBalance"] }),
+        queryClient.invalidateQueries({ queryKey: ["houseStats"] }),
+      ]).catch(() => undefined);
       return result.ok;
     },
     [actor, queryClient],

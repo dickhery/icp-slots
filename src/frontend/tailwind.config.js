@@ -130,6 +130,18 @@ export default {
           "0%, 100%": { boxShadow: "0 0 12px oklch(0.62 0.24 25 / 0.3)" },
           "50%": { boxShadow: "0 0 28px oklch(0.62 0.24 25 / 0.6)" },
         },
+        "payment-ready": {
+          "0%": { transform: "scale(0.96)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "payment-scan": {
+          "0%": { transform: "translateX(-130%)" },
+          "100%": { transform: "translateX(130%)" },
+        },
+        "jackpot-burst": {
+          "0%, 100%": { transform: "scale(1) rotate(-1deg)" },
+          "50%": { transform: "scale(1.06) rotate(1deg)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -138,6 +150,9 @@ export default {
         "win-flash": "win-flash 0.9s ease-in-out 2",
         "coin-drop": "coin-drop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both",
         "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",
+        "payment-ready": "payment-ready 0.28s ease-out both",
+        "payment-scan": "payment-scan 1.1s ease-in-out infinite",
+        "jackpot-burst": "jackpot-burst 0.6s ease-in-out 3",
       },
     },
   },
