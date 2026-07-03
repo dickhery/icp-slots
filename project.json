@@ -1,0 +1,22 @@
+{
+  "overview": "A fun 5-reel ICP slot machine where players sign in with Internet Identity, pay 0.01 ICP per spin, win prizes paid instantly to their account, and the first user becomes admin with control of the house balance.",
+  "features": [
+    "5-reel slot machine with classic symbols and animated spinning reels",
+    "Internet Identity sign-in with per-user ICP account provisioning",
+    "0.01 ICP per spin with instant prize payouts to player accounts",
+    "98% payback rate with 2% house edge retained in the backend",
+    "Player wallet with balance display and ICP transfers to external addresses",
+    "Admin panel for the first user with house balance control and transfers",
+    "Single payline win evaluation with celebration animations"
+  ],
+  "category": "game",
+  "tags": [
+    "slot-machine",
+    "icp",
+    "internet-identity",
+    "game",
+    "gambling",
+    "blockchain"
+  ],
+  "last_updated": "2026-07-03T03:15:48.969Z"
+}

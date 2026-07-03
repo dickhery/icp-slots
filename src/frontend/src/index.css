@@ -1,0 +1,183 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Geist+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/assets/fonts/SpaceGrotesk.woff2") format("woff2");
+}
+
+@layer base {
+  :root {
+    /* Neon Casino Vault — dark is the canonical theme */
+    --font-display: "Space Grotesk", sans-serif;
+    --font-body: "DM Sans", sans-serif;
+    --font-mono: "Geist Mono", monospace;
+    --radius: 0.625rem;
+
+    /* Dark warm charcoal background */
+    --background: 0.14 0.015 50;
+    --foreground: 0.95 0.005 60;
+    --card: 0.185 0.018 50;
+    --card-foreground: 0.95 0.005 60;
+    --popover: 0.21 0.02 50;
+    --popover-foreground: 0.95 0.005 60;
+
+    /* Red-magenta primary */
+    --primary: 0.62 0.24 25;
+    --primary-foreground: 0.98 0.01 60;
+
+    --secondary: 0.24 0.02 50;
+    --secondary-foreground: 0.88 0.01 60;
+    --muted: 0.22 0.018 50;
+    --muted-foreground: 0.62 0.015 55;
+
+    /* Gold accent */
+    --accent: 0.82 0.16 80;
+    --accent-foreground: 0.16 0.02 50;
+
+    /* Emerald success */
+    --success: 0.7 0.18 150;
+    --success-foreground: 0.14 0.02 50;
+
+    /* Amber warning */
+    --warning: 0.78 0.15 70;
+    --warning-foreground: 0.16 0.02 50;
+
+    --destructive: 0.58 0.24 25;
+    --destructive-foreground: 0.98 0.01 60;
+
+    --border: 0.3 0.02 50;
+    --input: 0.3 0.02 50;
+    --ring: 0.82 0.16 80;
+
+    --chart-1: 0.62 0.24 25;
+    --chart-2: 0.82 0.16 80;
+    --chart-3: 0.7 0.18 150;
+    --chart-4: 0.78 0.15 70;
+    --chart-5: 0.55 0.2 305;
+
+    --sidebar: 0.185 0.018 50;
+    --sidebar-foreground: 0.95 0.005 60;
+    --sidebar-primary: 0.62 0.24 25;
+    --sidebar-primary-foreground: 0.98 0.01 60;
+    --sidebar-accent: 0.24 0.02 50;
+    --sidebar-accent-foreground: 0.88 0.01 60;
+    --sidebar-border: 0.3 0.02 50;
+    --sidebar-ring: 0.82 0.16 80;
+  }
+
+  .light {
+    /* Light variant — warm ivory vault, kept for accessibility fallback */
+    --background: 0.97 0.008 70;
+    --foreground: 0.18 0.015 50;
+    --card: 0.99 0.006 70;
+    --card-foreground: 0.18 0.015 50;
+    --popover: 0.99 0.006 70;
+    --popover-foreground: 0.18 0.015 50;
+
+    --primary: 0.55 0.22 25;
+    --primary-foreground: 0.98 0.01 60;
+
+    --secondary: 0.93 0.01 70;
+    --secondary-foreground: 0.25 0.015 50;
+    --muted: 0.93 0.01 70;
+    --muted-foreground: 0.5 0.012 55;
+
+    --accent: 0.72 0.14 75;
+    --accent-foreground: 0.16 0.02 50;
+
+    --success: 0.62 0.16 150;
+    --success-foreground: 0.98 0.01 60;
+
+    --warning: 0.7 0.14 70;
+    --warning-foreground: 0.16 0.02 50;
+
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0.01 60;
+
+    --border: 0.88 0.01 70;
+    --input: 0.88 0.01 70;
+    --ring: 0.72 0.14 75;
+
+    --chart-1: 0.55 0.22 25;
+    --chart-2: 0.72 0.14 75;
+    --chart-3: 0.62 0.16 150;
+    --chart-4: 0.7 0.14 70;
+    --chart-5: 0.5 0.18 305;
+
+    --sidebar: 0.99 0.006 70;
+    --sidebar-foreground: 0.18 0.015 50;
+    --sidebar-primary: 0.55 0.22 25;
+    --sidebar-primary-foreground: 0.98 0.01 60;
+    --sidebar-accent: 0.93 0.01 70;
+    --sidebar-accent-foreground: 0.25 0.015 50;
+    --sidebar-border: 0.88 0.01 70;
+    --sidebar-ring: 0.72 0.14 75;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image: radial-gradient(
+        circle at 15% 12%,
+        oklch(0.62 0.24 25 / 0.08),
+        transparent 42%
+      ),
+      radial-gradient(
+        circle at 85% 88%,
+        oklch(0.82 0.16 80 / 0.06),
+        transparent 45%
+      );
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .text-glow-gold {
+    text-shadow: 0 0 14px oklch(0.82 0.16 80 / 0.55), 0 0 4px
+      oklch(0.82 0.16 80 / 0.4);
+  }
+  .text-glow-primary {
+    text-shadow: 0 0 14px oklch(0.62 0.24 25 / 0.55), 0 0 4px
+      oklch(0.62 0.24 25 / 0.4);
+  }
+  .vault-grain {
+    background-image: radial-gradient(
+      oklch(0.95 0.005 60 / 0.025) 1px,
+      transparent 1px
+    );
+    background-size: 3px 3px;
+  }
+  .reel-edge {
+    background: linear-gradient(
+      180deg,
+      oklch(0.1 0.01 50) 0%,
+      oklch(0.16 0.015 50) 50%,
+      oklch(0.1 0.01 50) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

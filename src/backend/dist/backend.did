@@ -1,0 +1,119 @@
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserId = principal;
+type TxKind = 
+ variant {
+   adminTransferOut;
+   spinCost;
+   transferIn;
+   transferOut;
+   win;
+ };
+type TransferResult = 
+ variant {
+   err: text;
+   ok: record {amount: Tokens;};
+ };
+type Transaction = 
+ record {
+   amount: Tokens;
+   counterparty: opt AccountIdentifier;
+   id: nat;
+   kind: TxKind;
+   timestamp: Timestamp;
+ };
+type Tokens = nat;
+type Timestamp = nat;
+type Symbol = 
+ variant {
+   bar;
+   bell;
+   cherry;
+   diamond;
+   lemon;
+   seven;
+ };
+type SpinRecord = 
+ record {
+   id: nat;
+   payout: Tokens;
+   symbols: vec Symbol;
+   timestamp: Timestamp;
+   wager: Tokens;
+   won: bool;
+ };
+type SpinOutcome = 
+ record {
+   payout: Tokens;
+   symbols: vec Symbol;
+   won: bool;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok;
+ };
+type PlayerView = 
+ record {
+   balance: Tokens;
+   id: UserId;
+ };
+type HouseStats = 
+ record {
+   houseBalance: Tokens;
+   houseRetained: Tokens;
+   totalPaidOut: Tokens;
+   totalSpins: nat;
+   totalWagered: Tokens;
+ };
+type Error = 
+ variant {
+   AmbiguousAttribute: record {
+                         field: text;
+                         sources: vec text;
+                       };
+   FrontendOriginMismatch: record {
+                             expected: vec text;
+                             got: text;
+                           };
+   FrontendOriginsNotConfigured;
+   MalformedCandid;
+   MissingField: text;
+   MixedSsoSources: record {
+                      otherKeys: vec text;
+                      ssoKeys: vec text;
+                    };
+   NoAttributes;
+   Stale: record {ageNs: nat;};
+   UnknownNonce;
+   UntrustedSsoSource: record {domain: text;};
+ };
+type AccountIdentifier = blob;
+service : {
+  __accessControlState: () -> (reserved) query;
+  __aggregateStats: () -> (reserved) query;
+  __counters: () -> (reserved) query;
+  __houseBalance: () -> (reserved) query;
+  __players: () -> (reserved) query;
+  __spinHistory: () -> (reserved) query;
+  __transactions: () -> (reserved) query;
+  _initialize_access_control: () -> ();
+  _internet_identity_sign_in_finish: () -> (Result);
+  _internet_identity_sign_in_start: () -> (blob);
+  adminTransfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  getBalance: () -> (Tokens) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getHouseBalance: () -> (Tokens) query;
+  getHouseStats: () -> (HouseStats) query;
+  getOrCreatePlayer: () -> (PlayerView);
+  getSpinHistory: () -> (vec SpinRecord) query;
+  getTransactionHistory: () -> (vec Transaction) query;
+  isCallerAdmin: () -> (bool) query;
+  spin: () -> (SpinOutcome);
+  transfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);
+}

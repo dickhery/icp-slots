@@ -1,0 +1,138 @@
+// Version: 4.0.0
+type AccessControlState__158890702 =
+  {
+    var adminAssigned : Bool;
+    userRoles : Map__222667396<Principal, UserRole__280136427>
+  };
+type AccountIdentifier__461726824 = Blob;
+type Data__80296667<K, V> =
+  {var count : Nat__1040412405; kvs : [var ?(K, V)]};
+type Internal__41346355<K, V> =
+  {children : [var ?Node__1000929467<K, V>]; data : Data__80296667<K, V>};
+type Leaf__712614010<K, V> = {data : Data__80296667<K, V>};
+type List__529703492<T> =
+  {
+    var blockIndex : Nat__1040412405;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__1040412405
+  };
+type List__560604548<T> = List__529703492<T>;
+type Map__222667396<K, V> = Map__912772452<K, V>;
+type Map__709709801<K, V> =
+  {var root : Node__1000929467<K, V>; var size : Nat__1040412405};
+type Map__912772452<K, V> = Map__709709801<K, V>;
+type Nat__1040412405 = Nat__920180692;
+type Nat__920180692 = Nat;
+type NewActor__749762360 =
+  {
+    var accessControlState : AccessControlState__158890702;
+    var aggregateStats :
+      {
+        var houseRetained : Nat;
+        var totalPaidOut : Nat;
+        var totalSpins : Nat;
+        var totalWagered : Nat
+      };
+    var counters : {var nextSpinId : Nat; var nextTxId : Nat};
+    var houseBalance : {var balance : Nat};
+    var players : Map__222667396<Principal, Player__757786787>;
+    var spinHistory :
+      Map__222667396<Principal, List__560604548<SpinRecord__853925053>>;
+    var transactions :
+      Map__222667396<Principal, List__560604548<Transaction__210366819>>
+  };
+type Node__1000929467<K, V> =
+  {#internal : Internal__41346355<K, V>; #leaf : Leaf__712614010<K, V>};
+type OldActor__342793170 = {};
+type Player__246356608 =
+  {
+    var balance : Tokens__622829522;
+    id : UserId__158757552;
+    subAccount : SubAccount__249903116
+  };
+type Player__757786787 =
+  {var balance : Nat; id : Principal; subAccount : Blob};
+type SpinRecord__559830098 =
+  {
+    id : Nat;
+    payout : Tokens__622829522;
+    symbols : [Symbol__51281560];
+    timestamp : Timestamp__301639476;
+    wager : Tokens__622829522;
+    won : Bool
+  };
+type SpinRecord__853925053 =
+  {
+    id : Nat;
+    payout : Nat;
+    symbols : [Symbol__151019658];
+    timestamp : Nat;
+    wager : Nat;
+    won : Bool
+  };
+type SubAccount__249903116 = Blob;
+type Symbol__151019658 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
+type Symbol__51281560 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
+type Timestamp__301639476 = Nat;
+type Tokens__622829522 = Nat;
+type Transaction__210366819 =
+  {
+    amount : Nat;
+    counterparty : ?Blob;
+    id : Nat;
+    kind : TxKind__396941721;
+    timestamp : Nat
+  };
+type Transaction__902413890 =
+  {
+    amount : Tokens__622829522;
+    counterparty : ?AccountIdentifier__461726824;
+    id : Nat;
+    kind : TxKind__670715900;
+    timestamp : Timestamp__301639476
+  };
+type TxKind__396941721 =
+  {#adminTransferOut; #spinCost; #transferIn; #transferOut; #win};
+type TxKind__670715900 =
+  {#adminTransferOut; #spinCost; #transferIn; #transferOut; #win};
+type UserId__158757552 = Principal;
+type UserRole__280136427 = {#admin; #guest; #user};
+type UserRole__686137147 = {#admin; #guest; #user};
+{
+  "20260703_031625" : (_old : OldActor__342793170) -> NewActor__749762360
+}
+actor  {
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__222667396<Principal, UserRole__686137147>
+    };
+  stable aggregateStats :
+    {
+      var houseRetained : Tokens__622829522;
+      var totalPaidOut : Tokens__622829522;
+      var totalSpins : Nat;
+      var totalWagered : Tokens__622829522
+    };
+  stable counters : {var nextSpinId : Nat; var nextTxId : Nat};
+  stable houseBalance : {var balance : Tokens__622829522};
+  stable players :
+    {
+      var root : Node__1000929467<UserId__158757552, Player__246356608>;
+      var size : Nat__1040412405
+    };
+  stable spinHistory :
+    {
+      var root :
+        Node__1000929467<UserId__158757552,
+                          List__560604548<SpinRecord__559830098>>;
+      var size : Nat__1040412405
+    };
+  stable transactions :
+    {
+      var root :
+        Node__1000929467<UserId__158757552,
+                          List__560604548<Transaction__902413890>>;
+      var size : Nat__1040412405
+    }
+};
