@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import type { SlotSymbol } from "@/types";
@@ -10,12 +10,16 @@ const ALL_SYMBOLS = Object.keys(SYMBOL_META) as SlotSymbol[];
 /** Number of symbol cells rendered in the spinning strip (must exceed viewport). */
 const STRIP_LENGTH = 30;
 
+const CELL_CLASS = "grid h-20 w-20 place-items-center sm:h-[5.833rem] sm:w-24";
+
 interface ReelProps {
   /** Final symbols to land on: [top, middle, bottom]. */
   targets: [SlotSymbol, SlotSymbol, SlotSymbol];
   spinning: boolean;
   index: number;
   durationMs?: number;
+  /** Changes on each completed spin to restart reel animation state. */
+  spinKey?: number;
 }
 
 function buildStrip(
@@ -35,26 +39,75 @@ export function Reel({
   spinning,
   index,
   durationMs = 900,
+  spinKey = 0,
 }: ReelProps) {
   const [strip, setStrip] = useState<SlotSymbol[]>(() => buildStrip(targets));
   const [phase, setPhase] = useState<"rest" | "spin" | "land">("rest");
-  const stripRef = useRef<HTMLDivElement>(null);
+  const [cellHeight, setCellHeight] = useState(80);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
+  useEffect(() => () => resizeObserverRef.current?.disconnect(), []);
+
+  const measureRef = useCallback((node: HTMLDivElement | null) => {
+    resizeObserverRef.current?.disconnect();
+    resizeObserverRef.current = null;
+    if (!node) return;
+
+    const updateHeight = () => {
+      setCellHeight(node.getBoundingClientRect().height);
+    };
+
+    updateHeight();
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(node);
+    resizeObserverRef.current = observer;
+  }, []);
+
+  // spinKey restarts animation when a new outcome arrives during an active spin.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: spinKey intentionally triggers reel reset
   useEffect(() => {
-    if (spinning) {
+    if (!spinning) {
       setStrip(buildStrip(targets));
-      setPhase("spin");
-      const landDelay = durationMs + index * 180;
-      const t = window.setTimeout(() => setPhase("land"), landDelay);
-      return () => window.clearTimeout(t);
+      setPhase("rest");
+      return;
     }
-    setPhase("rest");
-  }, [spinning, targets, index, durationMs]);
 
-  const cellPx = 80;
+    setStrip(buildStrip(targets));
+    setPhase("spin");
+    const landDelay = durationMs + index * 180;
+    const landTimer = window.setTimeout(() => setPhase("land"), landDelay);
+    return () => window.clearTimeout(landTimer);
+  }, [spinning, targets, index, durationMs, spinKey]);
+
   const visibleRows = 3;
-  const stripHeight = strip.length * cellPx;
-  const restOffset = stripHeight - visibleRows * cellPx;
+  const restOffset = (strip.length - visibleRows) * cellHeight;
+
+  if (!spinning && phase === "rest") {
+    return (
+      <div
+        className="relative h-[15rem] w-20 overflow-hidden rounded-lg reel-edge ring-1 ring-border/60 sm:h-[17.5rem] sm:w-24"
+        aria-label={`Reel ${index + 1}`}
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background/80 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background/80 to-transparent" />
+        <div className="flex flex-col">
+          {targets.map((sym, i) => {
+            const meta = SYMBOL_META[sym];
+            return (
+              <div
+                // biome-ignore lint/suspicious/noArrayIndexKey: fixed 3-row reel positions
+                key={`${spinKey}-rest-${i}`}
+                ref={i === 0 ? measureRef : undefined}
+                className={CELL_CLASS}
+              >
+                <SymbolCell symbol={sym} meta={meta} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -65,7 +118,6 @@ export function Reel({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background/80 to-transparent" />
 
       <div
-        ref={stripRef}
         className={cn(
           "flex flex-col will-change-transform",
           phase === "spin" && "animate-reel-spin",
@@ -87,9 +139,11 @@ export function Reel({
           const isFinal = i >= strip.length - 3;
           return (
             <div
-              key={`${sym}-${strip.length - i}`}
+              // biome-ignore lint/suspicious/noArrayIndexKey: strip index is stable per spinKey
+              key={`${spinKey}-${i}`}
+              ref={i === 0 ? measureRef : undefined}
               className={cn(
-                "grid h-20 w-20 place-items-center sm:h-[5.833rem] sm:w-24",
+                CELL_CLASS,
                 isFinal && phase === "land" && "animate-win-flash",
               )}
             >

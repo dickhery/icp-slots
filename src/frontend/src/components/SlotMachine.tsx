@@ -43,6 +43,12 @@ export function SlotMachine() {
   const [winTrigger, setWinTrigger] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const spinIdRef = useRef(0);
+  const [spinKey, setSpinKey] = useState(0);
+
+  const reelDurationMs = 900;
+  const reelStaggerMs = 180;
+  const reelCount = 5;
+  const spinSettleMs = reelDurationMs + (reelCount - 1) * reelStaggerMs + 250;
 
   const wager = computeWager(activeLines);
   const insufficientFunds = balance.e8s !== null && balance.e8s < wager;
@@ -58,6 +64,7 @@ export function SlotMachine() {
       const outcome = await spin(activeLines);
       if (id !== spinIdRef.current) return;
       setDisplay(outcome.reels as ReelGrid);
+      setSpinKey(id);
       window.setTimeout(() => {
         if (id !== spinIdRef.current) return;
         setSpinning(false);
@@ -68,7 +75,7 @@ export function SlotMachine() {
           setPayout(outcome.payout);
           setWinTrigger((n) => n + 1);
         }
-      }, 1100);
+      }, spinSettleMs);
     } catch (e) {
       if (id !== spinIdRef.current) return;
       setSpinning(false);
@@ -140,7 +147,8 @@ export function SlotMachine() {
                 display[i] as [SlotSymbolType, SlotSymbolType, SlotSymbolType]
               }
               spinning={spinning}
-              durationMs={900}
+              durationMs={reelDurationMs}
+              spinKey={spinKey}
             />
           ))}
         </div>
