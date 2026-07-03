@@ -2,6 +2,7 @@ import type {
   AccountIdentifier,
   HouseStats,
   PlayerView,
+  ReelGrid,
   SpinOutcome,
   SpinRecord,
   Tokens,
@@ -16,6 +17,7 @@ export type {
   AccountIdentifier,
   HouseStats,
   PlayerView,
+  ReelGrid,
   SpinOutcome,
   SpinRecord,
   Tokens,
@@ -30,8 +32,38 @@ export { SlotSymbol };
 /** ICP has 8 decimals — e8s. */
 export const ICP_DECIMALS = 8;
 
-/** Spin cost fixed at 0.01 ICP per spin (in e8s). */
+/** Per-line spin cost: 0.01 ICP (in e8s). */
 export const SPIN_COST_E8S = 1_000_000n;
+
+/** Allowed active payline counts. */
+export const LINE_OPTIONS = [1, 3, 5, 9] as const;
+export type LineCount = (typeof LINE_OPTIONS)[number];
+
+/** Nine classic paylines (row index per reel column). */
+export const PAYLINE_DEFS: readonly (readonly [
+  number,
+  number,
+  number,
+  number,
+  number,
+])[] = [
+  [1, 1, 1, 1, 1],
+  [0, 0, 0, 0, 0],
+  [2, 2, 2, 2, 2],
+  [0, 1, 2, 1, 0],
+  [2, 1, 0, 1, 2],
+  [1, 0, 0, 0, 1],
+  [1, 2, 2, 2, 1],
+  [0, 0, 1, 2, 2],
+  [2, 2, 1, 0, 0],
+] as const;
+
+export const MAX_PAYLINES = PAYLINE_DEFS.length;
+
+/** Total wager for a spin with the given number of active lines. */
+export function computeWager(activeLines: number): bigint {
+  return SPIN_COST_E8S * BigInt(activeLines);
+}
 
 /** Format an e8s amount as a human-readable ICP string. */
 export function formatIcp(e8s: Tokens): string {
@@ -62,6 +94,8 @@ export const SYMBOL_META: Record<SlotSymbol, SymbolMeta> = {
   seven: { glyph: "7", label: "Seven", accent: "primary" },
   bar: { glyph: "BAR", label: "Bar", accent: "accent" },
   diamond: { glyph: "💎", label: "Diamond", accent: "success" },
+  star: { glyph: "⭐", label: "Star", accent: "warning" },
+  horseshoe: { glyph: "H", label: "Horseshoe", accent: "success" },
 };
 
 /** Routes available in the app shell. */

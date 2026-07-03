@@ -50,21 +50,26 @@ export const HouseStats = IDL.Record({
 });
 export const UserId = IDL.Principal;
 export const PlayerView = IDL.Record({ 'id' : UserId, 'balance' : Tokens });
+export const Timestamp = IDL.Nat;
 export const Symbol = IDL.Variant({
   'bar' : IDL.Null,
   'bell' : IDL.Null,
+  'star' : IDL.Null,
   'diamond' : IDL.Null,
+  'horseshoe' : IDL.Null,
   'lemon' : IDL.Null,
   'seven' : IDL.Null,
   'cherry' : IDL.Null,
 });
-export const Timestamp = IDL.Nat;
+export const ReelGrid = IDL.Vec(IDL.Vec(Symbol));
 export const SpinRecord = IDL.Record({
   'id' : IDL.Nat,
   'won' : IDL.Bool,
-  'symbols' : IDL.Vec(Symbol),
+  'winningLines' : IDL.Vec(IDL.Nat),
   'timestamp' : Timestamp,
   'wager' : Tokens,
+  'activeLines' : IDL.Nat,
+  'reels' : ReelGrid,
   'payout' : Tokens,
 });
 export const TxKind = IDL.Variant({
@@ -83,7 +88,10 @@ export const Transaction = IDL.Record({
 });
 export const SpinOutcome = IDL.Record({
   'won' : IDL.Bool,
-  'symbols' : IDL.Vec(Symbol),
+  'winningLines' : IDL.Vec(IDL.Nat),
+  'wager' : Tokens,
+  'activeLines' : IDL.Nat,
+  'reels' : ReelGrid,
   'payout' : Tokens,
 });
 
@@ -108,7 +116,7 @@ export const idlService = IDL.Service({
   'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
   'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'spin' : IDL.Func([], [SpinOutcome], []),
+  'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
   'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
 });
 
@@ -157,21 +165,26 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserId = IDL.Principal;
   const PlayerView = IDL.Record({ 'id' : UserId, 'balance' : Tokens });
+  const Timestamp = IDL.Nat;
   const Symbol = IDL.Variant({
     'bar' : IDL.Null,
     'bell' : IDL.Null,
+    'star' : IDL.Null,
     'diamond' : IDL.Null,
+    'horseshoe' : IDL.Null,
     'lemon' : IDL.Null,
     'seven' : IDL.Null,
     'cherry' : IDL.Null,
   });
-  const Timestamp = IDL.Nat;
+  const ReelGrid = IDL.Vec(IDL.Vec(Symbol));
   const SpinRecord = IDL.Record({
     'id' : IDL.Nat,
     'won' : IDL.Bool,
-    'symbols' : IDL.Vec(Symbol),
+    'winningLines' : IDL.Vec(IDL.Nat),
     'timestamp' : Timestamp,
     'wager' : Tokens,
+    'activeLines' : IDL.Nat,
+    'reels' : ReelGrid,
     'payout' : Tokens,
   });
   const TxKind = IDL.Variant({
@@ -190,7 +203,10 @@ export const idlFactory = ({ IDL }) => {
   });
   const SpinOutcome = IDL.Record({
     'won' : IDL.Bool,
-    'symbols' : IDL.Vec(Symbol),
+    'winningLines' : IDL.Vec(IDL.Nat),
+    'wager' : Tokens,
+    'activeLines' : IDL.Nat,
+    'reels' : ReelGrid,
     'payout' : Tokens,
   });
   
@@ -219,7 +235,7 @@ export const idlFactory = ({ IDL }) => {
     'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
     'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'spin' : IDL.Func([], [SpinOutcome], []),
+    'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
     'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
   });
 };

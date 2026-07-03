@@ -9,26 +9,33 @@ module {
     #seven;
     #bar;
     #diamond;
+    #star;
+    #horseshoe;
   };
 
-  // A single spin result: the 5 symbols that landed on the payline.
-  public type ReelResult = { symbols : [Symbol] };
+  // A 5-reel × 3-row grid. Outer index is reel (column), inner is row (0=top).
+  public type ReelGrid = [[Symbol]];
 
-  // The outcome of a spin: the reels, whether it won, and the payout.
+  // The outcome of a spin: full reel grid, active lines, and total payout.
   public type SpinOutcome = {
-    symbols : [Symbol];
+    reels : ReelGrid;
+    activeLines : Nat;
+    wager : Common.Tokens;
     won : Bool;
     payout : Common.Tokens;
+    winningLines : [Nat];
   };
 
   // A historical spin record for a player.
   public type SpinRecord = {
     id : Nat;
     timestamp : Common.Timestamp;
-    symbols : [Symbol];
+    reels : ReelGrid;
+    activeLines : Nat;
     wager : Common.Tokens;
     payout : Common.Tokens;
     won : Bool;
+    winningLines : [Nat];
   };
 
   // A player's wallet transaction record.

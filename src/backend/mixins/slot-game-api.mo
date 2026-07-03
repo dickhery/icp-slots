@@ -35,7 +35,7 @@ mixin (
   };
 
   // Derive a deterministic 32-byte subaccount for a player from their principal.
-  // The subaccount is the principal's blob bytes repeated to fill 32 bytes.
+  // Each player gets an isolated in-canister balance keyed by principal + subaccount.
   func subAccountFor(id : Common.UserId) : Common.SubAccount {
     let raw = id.toBlob();
     let bytes = Array.tabulate(32, func(i) {
@@ -141,41 +141,40 @@ mixin (
 
   // ---- Slot gameplay ----
 
-  // Charges 0.01 ICP, spins the reels, evaluates the payline, and pays out
-  // any winnings immediately to the player's account.
-  public shared ({ caller }) func spin() : async SlotGame.SpinOutcome {
+  // Charges 0.01 ICP per active payline, spins a 5×3 reel grid, evaluates
+  // all active paylines, and pays out any winnings immediately.
+  public shared ({ caller }) func spin(activeLines : Nat) : async SlotGame.SpinOutcome {
+    if (not SlotGameLib.isValidLineCount(activeLines)) {
+      Runtime.trap("activeLines must be 1, 3, 5, or 9");
+    };
     let player = requirePlayer(caller);
-    // Charge the spin cost.
-    if (player.balance < SlotGameLib.SPIN_COST) {
+    let wager = SlotGameLib.computeWager(activeLines);
+    if (player.balance < wager) {
       Runtime.trap("Insufficient balance to spin");
     };
-    player.balance -= SlotGameLib.SPIN_COST;
-    houseBalance.balance += SlotGameLib.SPIN_COST;
+    player.balance -= wager;
+    houseBalance.balance += wager;
 
-    // Record the spin cost transaction.
     appendTransaction(
       caller,
       {
         id = nextTxId();
         timestamp = nowTimestamp();
         kind = #spinCost;
-        amount = SlotGameLib.SPIN_COST;
+        amount = wager;
         counterparty = null;
       },
     );
 
-    // Generate the spin using a seed derived from time + caller + spin id.
     let seed = nowTimestamp() + Nat.fromNat32(caller.hash()) + counters.nextSpinId;
-    let symbols = SlotGameLib.generateSpin(seed);
-    let outcome = SlotGameLib.evaluateSpin(symbols);
+    let reels = SlotGameLib.generateSpin(seed);
+    let outcome = SlotGameLib.evaluateSpin(reels, activeLines);
 
-    // Pay out winnings immediately.
     if (outcome.won) {
       player.balance += outcome.payout;
       if (houseBalance.balance >= outcome.payout) {
         houseBalance.balance -= outcome.payout;
       } else {
-        // House should never be short if payback < 100%, but guard anyway.
         houseBalance.balance := 0;
       };
       appendTransaction(
@@ -190,24 +189,23 @@ mixin (
       );
     };
 
-    // Record the spin in history.
     appendSpinRecord(
       caller,
       {
         id = nextSpinId();
         timestamp = nowTimestamp();
-        symbols;
-        wager = SlotGameLib.SPIN_COST;
+        reels = outcome.reels;
+        activeLines = outcome.activeLines;
+        wager = outcome.wager;
         payout = outcome.payout;
         won = outcome.won;
+        winningLines = outcome.winningLines;
       },
     );
 
-    // Update aggregate stats.
     aggregateStats.totalSpins += 1;
-    aggregateStats.totalWagered += SlotGameLib.SPIN_COST;
+    aggregateStats.totalWagered += wager;
     aggregateStats.totalPaidOut += outcome.payout;
-    // House retained = wagered - paid out (cumulative).
     aggregateStats.houseRetained := aggregateStats.totalWagered - aggregateStats.totalPaidOut;
 
     outcome;

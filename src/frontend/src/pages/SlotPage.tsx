@@ -5,7 +5,7 @@ import { useSpinHistory } from "@/hooks/use-backend";
 
 /**
  * Slot page: cabinet + payout table + recent spin history.
- * Single payline across five reels, 0.01 ICP per spin.
+ * Five reels × three rows with up to nine paylines at 0.01 ICP per line.
  */
 export function SlotPage() {
   const { data: spins = [], isLoading } = useSpinHistory();

@@ -34,24 +34,32 @@ export interface HouseStats {
   'houseBalance' : Tokens,
 }
 export interface PlayerView { 'id' : UserId, 'balance' : Tokens }
+export type ReelGrid = Array<Array<Symbol>>;
 export type Result = { 'ok' : null } |
   { 'err' : Error };
 export interface SpinOutcome {
   'won' : boolean,
-  'symbols' : Array<Symbol>,
+  'winningLines' : Array<bigint>,
+  'wager' : Tokens,
+  'activeLines' : bigint,
+  'reels' : ReelGrid,
   'payout' : Tokens,
 }
 export interface SpinRecord {
   'id' : bigint,
   'won' : boolean,
-  'symbols' : Array<Symbol>,
+  'winningLines' : Array<bigint>,
   'timestamp' : Timestamp,
   'wager' : Tokens,
+  'activeLines' : bigint,
+  'reels' : ReelGrid,
   'payout' : Tokens,
 }
 export type Symbol = { 'bar' : null } |
   { 'bell' : null } |
+  { 'star' : null } |
   { 'diamond' : null } |
+  { 'horseshoe' : null } |
   { 'lemon' : null } |
   { 'seven' : null } |
   { 'cherry' : null };
@@ -96,7 +104,7 @@ export interface _SERVICE {
   'getSpinHistory' : ActorMethod<[], Array<SpinRecord>>,
   'getTransactionHistory' : ActorMethod<[], Array<Transaction>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'spin' : ActorMethod<[], SpinOutcome>,
+  'spin' : ActorMethod<[bigint], SpinOutcome>,
   'transfer' : ActorMethod<[AccountIdentifier, Tokens], TransferResult>,
 }
 export declare const idlService: IDL.ServiceClass;

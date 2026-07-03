@@ -54,7 +54,7 @@ export function BalanceCard() {
                 Your Balance
               </CardTitle>
               <CardDescription className="text-xs">
-                Available ICP in your vault
+                In-canister balance tied to your Internet Identity principal
               </CardDescription>
             </div>
           </div>

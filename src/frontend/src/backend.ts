@@ -54,6 +54,16 @@ function record_opt_to_undefined<T>(arg: T | null): T | undefined {
 import { ExternalBlob } from "@caffeineai/object-storage";
 export { ExternalBlob } from "@caffeineai/object-storage";
 export type Timestamp = bigint;
+export interface SpinRecord {
+    id: bigint;
+    won: boolean;
+    winningLines: Array<bigint>;
+    timestamp: Timestamp;
+    wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
+    payout: Tokens;
+}
 export type Error_ = {
     __kind__: "FrontendOriginsNotConfigured";
     FrontendOriginsNotConfigured: null;
@@ -98,14 +108,7 @@ export type Error_ = {
         expected: Array<string>;
     };
 };
-export interface SpinRecord {
-    id: bigint;
-    won: boolean;
-    symbols: Array<Symbol>;
-    timestamp: Timestamp;
-    wager: Tokens;
-    payout: Tokens;
-}
+export type ReelGrid = Array<Array<Symbol>>;
 export interface Transaction {
     id: bigint;
     kind: TxKind;
@@ -133,7 +136,10 @@ export type TransferResult = {
 export type AccountIdentifier = Uint8Array;
 export interface SpinOutcome {
     won: boolean;
-    symbols: Array<Symbol>;
+    winningLines: Array<bigint>;
+    wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
     payout: Tokens;
 }
 export interface PlayerView {
@@ -151,7 +157,9 @@ export type Tokens = bigint;
 export enum Symbol {
     bar = "bar",
     bell = "bell",
+    star = "star",
     diamond = "diamond",
+    horseshoe = "horseshoe",
     lemon = "lemon",
     seven = "seven",
     cherry = "cherry"
@@ -189,10 +197,10 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(): Promise<SpinOutcome>;
+    spin(activeLines: bigint): Promise<SpinOutcome>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }
-import type { AccountIdentifier as _AccountIdentifier, Error as _Error, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, Symbol as _Symbol, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { AccountIdentifier as _AccountIdentifier, Error as _Error, ReelGrid as _ReelGrid, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, Symbol as _Symbol, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async __accessControlState(): Promise<any> {
@@ -451,14 +459,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getTransactionHistory();
-                return from_candid_vec_n17(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n19(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTransactionHistory();
-            return from_candid_vec_n17(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n19(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -475,18 +483,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async spin(): Promise<SpinOutcome> {
+    async spin(arg0: bigint): Promise<SpinOutcome> {
         if (this.processError) {
             try {
-                const result = await this.actor.spin();
-                return from_candid_SpinOutcome_n23(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.spin(arg0);
+                return from_candid_SpinOutcome_n25(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.spin();
-            return from_candid_SpinOutcome_n23(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.spin(arg0);
+            return from_candid_SpinOutcome_n25(this._uploadFile, this._downloadFile, result);
         }
     }
     async transfer(arg0: AccountIdentifier, arg1: Tokens): Promise<TransferResult> {
@@ -507,58 +515,67 @@ export class Backend implements backendInterface {
 function from_candid_Error_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Error): Error_ {
     return from_candid_variant_n4(_uploadFile, _downloadFile, value);
 }
+function from_candid_ReelGrid_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ReelGrid): ReelGrid {
+    return from_candid_vec_n15(_uploadFile, _downloadFile, value);
+}
 function from_candid_Result_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Result): Result {
     return from_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function from_candid_SpinOutcome_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinOutcome): SpinOutcome {
-    return from_candid_record_n24(_uploadFile, _downloadFile, value);
+function from_candid_SpinOutcome_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinOutcome): SpinOutcome {
+    return from_candid_record_n26(_uploadFile, _downloadFile, value);
 }
 function from_candid_SpinRecord_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinRecord): SpinRecord {
     return from_candid_record_n13(_uploadFile, _downloadFile, value);
 }
-function from_candid_Symbol_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Symbol): Symbol {
-    return from_candid_variant_n16(_uploadFile, _downloadFile, value);
+function from_candid_Symbol_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Symbol): Symbol {
+    return from_candid_variant_n18(_uploadFile, _downloadFile, value);
 }
-function from_candid_Transaction_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Transaction): Transaction {
-    return from_candid_record_n19(_uploadFile, _downloadFile, value);
+function from_candid_Transaction_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Transaction): Transaction {
+    return from_candid_record_n21(_uploadFile, _downloadFile, value);
 }
 function from_candid_TransferResult_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TransferResult): TransferResult {
     return from_candid_variant_n6(_uploadFile, _downloadFile, value);
 }
-function from_candid_TxKind_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TxKind): TxKind {
-    return from_candid_variant_n21(_uploadFile, _downloadFile, value);
+function from_candid_TxKind_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TxKind): TxKind {
+    return from_candid_variant_n23(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AccountIdentifier]): AccountIdentifier | null {
+function from_candid_opt_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AccountIdentifier]): AccountIdentifier | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     won: boolean;
-    symbols: Array<_Symbol>;
+    winningLines: Array<bigint>;
     timestamp: _Timestamp;
     wager: _Tokens;
+    activeLines: bigint;
+    reels: _ReelGrid;
     payout: _Tokens;
 }): {
     id: bigint;
     won: boolean;
-    symbols: Array<Symbol>;
+    winningLines: Array<bigint>;
     timestamp: Timestamp;
     wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
     payout: Tokens;
 } {
     return {
         id: value.id,
         won: value.won,
-        symbols: from_candid_vec_n14(_uploadFile, _downloadFile, value.symbols),
+        winningLines: value.winningLines,
         timestamp: value.timestamp,
         wager: value.wager,
+        activeLines: value.activeLines,
+        reels: from_candid_ReelGrid_n14(_uploadFile, _downloadFile, value.reels),
         payout: value.payout
     };
 }
-function from_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     kind: _TxKind;
     counterparty: [] | [_AccountIdentifier];
@@ -573,24 +590,33 @@ function from_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        kind: from_candid_TxKind_n20(_uploadFile, _downloadFile, value.kind),
-        counterparty: record_opt_to_undefined(from_candid_opt_n22(_uploadFile, _downloadFile, value.counterparty)),
+        kind: from_candid_TxKind_n22(_uploadFile, _downloadFile, value.kind),
+        counterparty: record_opt_to_undefined(from_candid_opt_n24(_uploadFile, _downloadFile, value.counterparty)),
         timestamp: value.timestamp,
         amount: value.amount
     };
 }
-function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     won: boolean;
-    symbols: Array<_Symbol>;
+    winningLines: Array<bigint>;
+    wager: _Tokens;
+    activeLines: bigint;
+    reels: _ReelGrid;
     payout: _Tokens;
 }): {
     won: boolean;
-    symbols: Array<Symbol>;
+    winningLines: Array<bigint>;
+    wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
     payout: Tokens;
 } {
     return {
         won: value.won,
-        symbols: from_candid_vec_n14(_uploadFile, _downloadFile, value.symbols),
+        winningLines: value.winningLines,
+        wager: value.wager,
+        activeLines: value.activeLines,
+        reels: from_candid_ReelGrid_n14(_uploadFile, _downloadFile, value.reels),
         payout: value.payout
     };
 }
@@ -603,12 +629,16 @@ function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_variant_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     bar: null;
 } | {
     bell: null;
 } | {
+    star: null;
+} | {
     diamond: null;
+} | {
+    horseshoe: null;
 } | {
     lemon: null;
 } | {
@@ -616,7 +646,7 @@ function from_candid_variant_n16(_uploadFile: (file: ExternalBlob) => Promise<Ui
 } | {
     cherry: null;
 }): Symbol {
-    return "bar" in value ? Symbol.bar : "bell" in value ? Symbol.bell : "diamond" in value ? Symbol.diamond : "lemon" in value ? Symbol.lemon : "seven" in value ? Symbol.seven : "cherry" in value ? Symbol.cherry : value;
+    return "bar" in value ? Symbol.bar : "bell" in value ? Symbol.bell : "star" in value ? Symbol.star : "diamond" in value ? Symbol.diamond : "horseshoe" in value ? Symbol.horseshoe : "lemon" in value ? Symbol.lemon : "seven" in value ? Symbol.seven : "cherry" in value ? Symbol.cherry : value;
 }
 function from_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     ok: null;
@@ -637,7 +667,7 @@ function from_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uin
         err: from_candid_Error_n3(_uploadFile, _downloadFile, value.err)
     } : value;
 }
-function from_candid_variant_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     win: null;
 } | {
     spinCost: null;
@@ -785,11 +815,14 @@ function from_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uin
 function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SpinRecord>): Array<SpinRecord> {
     return value.map((x)=>from_candid_SpinRecord_n12(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Symbol>): Array<Symbol> {
-    return value.map((x)=>from_candid_Symbol_n15(_uploadFile, _downloadFile, x));
+function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<Array<_Symbol>>): Array<Array<Symbol>> {
+    return value.map((x)=>from_candid_vec_n16(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Transaction>): Array<Transaction> {
-    return value.map((x)=>from_candid_Transaction_n18(_uploadFile, _downloadFile, x));
+function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Symbol>): Array<Symbol> {
+    return value.map((x)=>from_candid_Symbol_n17(_uploadFile, _downloadFile, x));
+}
+function from_candid_vec_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Transaction>): Array<Transaction> {
+    return value.map((x)=>from_candid_Transaction_n20(_uploadFile, _downloadFile, x));
 }
 function to_candid_UserRole_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n8(_uploadFile, _downloadFile, value);

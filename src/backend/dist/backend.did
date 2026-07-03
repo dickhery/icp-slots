@@ -34,22 +34,29 @@ type Symbol =
    bell;
    cherry;
    diamond;
+   horseshoe;
    lemon;
    seven;
+   star;
  };
 type SpinRecord = 
  record {
+   activeLines: nat;
    id: nat;
    payout: Tokens;
-   symbols: vec Symbol;
+   reels: ReelGrid;
    timestamp: Timestamp;
    wager: Tokens;
+   winningLines: vec nat;
    won: bool;
  };
 type SpinOutcome = 
  record {
+   activeLines: nat;
    payout: Tokens;
-   symbols: vec Symbol;
+   reels: ReelGrid;
+   wager: Tokens;
+   winningLines: vec nat;
    won: bool;
  };
 type Result = 
@@ -57,6 +64,7 @@ type Result =
    err: Error;
    ok;
  };
+type ReelGrid = vec vec Symbol;
 type PlayerView = 
  record {
    balance: Tokens;
@@ -114,6 +122,6 @@ service : {
   getSpinHistory: () -> (vec SpinRecord) query;
   getTransactionHistory: () -> (vec Transaction) query;
   isCallerAdmin: () -> (bool) query;
-  spin: () -> (SpinOutcome);
+  spin: (activeLines: nat) -> (SpinOutcome);
   transfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);
 }

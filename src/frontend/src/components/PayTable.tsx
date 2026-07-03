@@ -10,20 +10,13 @@ import { SYMBOL_META, SlotSymbol } from "@/types";
 
 /** A single payout-table row describing a symbol combination and its prize. */
 export interface PayTier {
-  /** Symbol that must appear on the payline. */
   symbol: SlotSymbol;
-  /** Minimum count of `symbol` on the payline to win this tier. */
   count: number;
-  /** Human-readable combination label (e.g. "3 × Cherry"). */
   label: string;
-  /** Prize in ICP (display only — backend is the source of truth). */
   prize: string;
 }
 
-/**
- * Reference payout tiers for the single payline. The backend computes the
- * actual payout; this table mirrors those values for player transparency.
- */
+/** Reference payout tiers per payline. Backend is the source of truth. */
 export const PAY_TIERS: PayTier[] = [
   {
     symbol: SlotSymbol.diamond,
@@ -49,9 +42,30 @@ export const PAY_TIERS: PayTier[] = [
   { symbol: SlotSymbol.bar, count: 5, label: "5 × Bar", prize: "1.00 ICP" },
   { symbol: SlotSymbol.bar, count: 4, label: "4 × Bar", prize: "0.30 ICP" },
   { symbol: SlotSymbol.bar, count: 3, label: "3 × Bar", prize: "0.08 ICP" },
+  { symbol: SlotSymbol.star, count: 5, label: "5 × Star", prize: "0.60 ICP" },
+  { symbol: SlotSymbol.star, count: 4, label: "4 × Star", prize: "0.18 ICP" },
+  { symbol: SlotSymbol.star, count: 3, label: "3 × Star", prize: "0.06 ICP" },
   { symbol: SlotSymbol.bell, count: 5, label: "5 × Bell", prize: "0.50 ICP" },
   { symbol: SlotSymbol.bell, count: 4, label: "4 × Bell", prize: "0.15 ICP" },
   { symbol: SlotSymbol.bell, count: 3, label: "3 × Bell", prize: "0.05 ICP" },
+  {
+    symbol: SlotSymbol.horseshoe,
+    count: 5,
+    label: "5 × Horseshoe",
+    prize: "0.30 ICP",
+  },
+  {
+    symbol: SlotSymbol.horseshoe,
+    count: 4,
+    label: "4 × Horseshoe",
+    prize: "0.09 ICP",
+  },
+  {
+    symbol: SlotSymbol.horseshoe,
+    count: 3,
+    label: "3 × Horseshoe",
+    prize: "0.03 ICP",
+  },
   {
     symbol: SlotSymbol.cherry,
     count: 3,
@@ -70,7 +84,8 @@ export function PayTable() {
           Payout Table
         </CardTitle>
         <CardDescription>
-          Match symbols on the center payline. Higher symbols pay more.
+          Match symbols left-to-right on any active payline. Prizes scale per
+          line bet (0.01 ICP).
         </CardDescription>
       </CardHeader>
       <CardContent>

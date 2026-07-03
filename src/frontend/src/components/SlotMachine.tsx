@@ -5,55 +5,64 @@ import { Button } from "@/components/ui/button";
 import { useSpin, useSpinHistory } from "@/hooks/use-backend";
 import { useBalance } from "@/hooks/use-balance";
 import { cn } from "@/lib/utils";
-import type { SlotSymbol as SlotSymbolType } from "@/types";
-import { SPIN_COST_E8S, formatIcp } from "@/types";
+import type {
+  LineCount,
+  ReelGrid,
+  SlotSymbol as SlotSymbolType,
+} from "@/types";
+import { computeWager, formatIcp } from "@/types";
+import { LineSelector } from "./LineSelector";
 import { Payline } from "./Payline";
 import { Reel } from "./Reel";
 import { WinCelebration } from "./WinCelebration";
 
-/** Neutral resting symbols shown before the first spin. */
-const REST_SYMBOLS: SlotSymbolType[] = [
-  SlotSymbol.cherry,
-  SlotSymbol.lemon,
-  SlotSymbol.bell,
-  SlotSymbol.seven,
-  SlotSymbol.diamond,
+/** Neutral resting grid shown before the first spin. */
+const REST_GRID: ReelGrid = [
+  [SlotSymbol.cherry, SlotSymbol.lemon, SlotSymbol.bell],
+  [SlotSymbol.lemon, SlotSymbol.bell, SlotSymbol.seven],
+  [SlotSymbol.bell, SlotSymbol.star, SlotSymbol.bar],
+  [SlotSymbol.seven, SlotSymbol.diamond, SlotSymbol.horseshoe],
+  [SlotSymbol.cherry, SlotSymbol.lemon, SlotSymbol.diamond],
 ];
 
 /**
- * The slot cabinet: five reels, a single center payline, a spin button that
- * charges 0.01 ICP, and a win celebration overlay.
+ * The slot cabinet: five reels × three rows, up to nine paylines, and a
+ * spin button that charges 0.01 ICP per active line.
  */
 export function SlotMachine() {
   const balance = useBalance();
   const spin = useSpin();
   const { data: history = [] } = useSpinHistory();
 
-  const [display, setDisplay] = useState<SlotSymbol[]>(REST_SYMBOLS);
+  const [display, setDisplay] = useState<ReelGrid>(REST_GRID);
+  const [activeLines, setActiveLines] = useState<LineCount>(1);
   const [spinning, setSpinning] = useState(false);
   const [won, setWon] = useState(false);
   const [payout, setPayout] = useState(0n);
+  const [winningLines, setWinningLines] = useState<number[]>([]);
   const [winTrigger, setWinTrigger] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const spinIdRef = useRef(0);
 
-  const insufficientFunds = balance.e8s !== null && balance.e8s < SPIN_COST_E8S;
+  const wager = computeWager(activeLines);
+  const insufficientFunds = balance.e8s !== null && balance.e8s < wager;
 
   const handleSpin = async () => {
     if (spinning) return;
     setError(null);
     setWon(false);
+    setWinningLines([]);
     setSpinning(true);
     const id = ++spinIdRef.current;
     try {
-      const outcome = await spin();
-      // Ignore stale responses if a newer spin started.
+      const outcome = await spin(activeLines);
       if (id !== spinIdRef.current) return;
-      setDisplay(outcome.symbols as SlotSymbol[]);
-      // Brief delay lets the reel land animation play before celebration.
+      setDisplay(outcome.reels as ReelGrid);
       window.setTimeout(() => {
         if (id !== spinIdRef.current) return;
         setSpinning(false);
+        const wins = outcome.winningLines.map(Number);
+        setWinningLines(wins);
         if (outcome.won && outcome.payout > 0n) {
           setWon(true);
           setPayout(outcome.payout);
@@ -67,10 +76,12 @@ export function SlotMachine() {
     }
   };
 
-  // Clear win highlight after the celebration window.
   useEffect(() => {
     if (!won) return;
-    const t = window.setTimeout(() => setWon(false), 2600);
+    const t = window.setTimeout(() => {
+      setWon(false);
+      setWinningLines([]);
+    }, 2600);
     return () => window.clearTimeout(t);
   }, [won]);
 
@@ -81,14 +92,13 @@ export function SlotMachine() {
     >
       <WinCelebration payout={payout} trigger={winTrigger} />
 
-      {/* Cabinet header */}
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between gap-4">
         <div>
           <h2 className="font-display text-xl font-bold tracking-tight text-glow-primary sm:text-2xl">
             Neon Vault
           </h2>
           <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-            Single Payline · 5 Reels
+            5 Reels · 3 Rows · Up to 9 Lines
           </p>
         </div>
         <div className="rounded-lg border border-accent/40 bg-accent/10 px-3 py-1.5 text-right">
@@ -104,18 +114,31 @@ export function SlotMachine() {
         </div>
       </div>
 
-      {/* Reel window */}
+      <div className="mb-4">
+        <LineSelector
+          value={activeLines}
+          onChange={setActiveLines}
+          disabled={spinning}
+        />
+      </div>
+
       <div
         className="relative rounded-xl border border-border/70 bg-background/60 p-3 vault-grain"
         data-ocid="slot.reel_window"
       >
-        <Payline active={won} />
+        <Payline
+          activeLines={activeLines}
+          winningLines={winningLines}
+          celebrating={won}
+        />
         <div className="relative z-10 flex justify-center gap-2 sm:gap-3">
-          {display.map((sym, i) => (
+          {(["a", "b", "c", "d", "e"] as const).map((reelId, i) => (
             <Reel
-              key={sym}
+              key={reelId}
               index={i}
-              target={sym}
+              targets={
+                display[i] as [SlotSymbolType, SlotSymbolType, SlotSymbolType]
+              }
               spinning={spinning}
               durationMs={900}
             />
@@ -123,7 +146,6 @@ export function SlotMachine() {
         </div>
       </div>
 
-      {/* Status line */}
       <div className="mt-4 min-h-6 text-center">
         {error ? (
           <p
@@ -138,6 +160,7 @@ export function SlotMachine() {
             data-ocid="slot.success_state"
           >
             Winner! +{formatIcp(payout)} ICP
+            {winningLines.length > 1 ? ` · ${winningLines.length} lines` : ""}
           </p>
         ) : spinning ? (
           <p className="text-sm text-muted-foreground">Spinning…</p>
@@ -145,12 +168,11 @@ export function SlotMachine() {
           <p className="text-sm text-muted-foreground">
             {insufficientFunds
               ? "Insufficient balance — top up your wallet to spin."
-              : `0.01 ICP per spin · ${history.length} spins played`}
+              : `${formatIcp(wager)} ICP per spin · ${history.length} spins played`}
           </p>
         )}
       </div>
 
-      {/* Spin control */}
       <div className="mt-4 flex justify-center">
         <Button
           type="button"
@@ -165,7 +187,7 @@ export function SlotMachine() {
             !spinning && !insufficientFunds && "animate-pulse-glow",
           )}
         >
-          {spinning ? "Spinning…" : "Spin · 0.01 ICP"}
+          {spinning ? "Spinning…" : `Spin · ${formatIcp(wager)} ICP`}
         </Button>
       </div>
     </div>

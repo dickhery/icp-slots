@@ -8,6 +8,16 @@ export interface None {
 }
 export type Option<T> = Some<T> | None;
 export type Timestamp = bigint;
+export interface SpinRecord {
+    id: bigint;
+    won: boolean;
+    winningLines: Array<bigint>;
+    timestamp: Timestamp;
+    wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
+    payout: Tokens;
+}
 export type Error_ = {
     __kind__: "FrontendOriginsNotConfigured";
     FrontendOriginsNotConfigured: null;
@@ -52,14 +62,7 @@ export type Error_ = {
         expected: Array<string>;
     };
 };
-export interface SpinRecord {
-    id: bigint;
-    won: boolean;
-    symbols: Array<Symbol>;
-    timestamp: Timestamp;
-    wager: Tokens;
-    payout: Tokens;
-}
+export type ReelGrid = Array<Array<Symbol>>;
 export interface Transaction {
     id: bigint;
     kind: TxKind;
@@ -87,7 +90,10 @@ export type TransferResult = {
 export type AccountIdentifier = Uint8Array;
 export interface SpinOutcome {
     won: boolean;
-    symbols: Array<Symbol>;
+    winningLines: Array<bigint>;
+    wager: Tokens;
+    activeLines: bigint;
+    reels: ReelGrid;
     payout: Tokens;
 }
 export interface PlayerView {
@@ -105,7 +111,9 @@ export type Tokens = bigint;
 export enum Symbol {
     bar = "bar",
     bell = "bell",
+    star = "star",
     diamond = "diamond",
+    horseshoe = "horseshoe",
     lemon = "lemon",
     seven = "seven",
     cherry = "cherry"
@@ -133,6 +141,6 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(): Promise<SpinOutcome>;
+    spin(activeLines: bigint): Promise<SpinOutcome>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }

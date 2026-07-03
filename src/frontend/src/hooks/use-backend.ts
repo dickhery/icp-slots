@@ -126,18 +126,21 @@ export function useHouseBalance() {
   });
 }
 
-/** Spin the reels. Invalidates balance + history on success. */
+/** Spin the reels with the chosen number of active paylines. */
 export function useSpin() {
   const { actor } = useBackend();
   const queryClient = useQueryClient();
-  return useCallback(async (): Promise<SpinOutcome> => {
-    if (!actor) throw new Error("Actor not ready");
-    const outcome = await actor.spin();
-    await queryClient.invalidateQueries({ queryKey: ["balance"] });
-    await queryClient.invalidateQueries({ queryKey: ["spinHistory"] });
-    await queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
-    return outcome;
-  }, [actor, queryClient]);
+  return useCallback(
+    async (activeLines: number): Promise<SpinOutcome> => {
+      if (!actor) throw new Error("Actor not ready");
+      const outcome = await actor.spin(BigInt(activeLines));
+      await queryClient.invalidateQueries({ queryKey: ["balance"] });
+      await queryClient.invalidateQueries({ queryKey: ["spinHistory"] });
+      await queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
+      return outcome;
+    },
+    [actor, queryClient],
+  );
 }
 
 /** Transfer ICP out of the player's wallet to an external account. */

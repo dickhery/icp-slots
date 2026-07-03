@@ -15,9 +15,9 @@ const SAMPLE_PRINCIPAL = Principal.fromText(
   "2vxsx-fae",
 ) as unknown as backendInterface extends never ? never : Principal;
 
-let balance = 50_000_000n; // 0.5 ICP in e8s
-let houseBalance = 12_000_000n; // 0.12 ICP
-const SPIN_COST = 1_000_000n; // 0.01 ICP
+let balance = 50_000_000n;
+let houseBalance = 12_000_000n;
+const SPIN_COST = 1_000_000n;
 
 const REEL_SYMBOLS: Sym[] = [
   Sym.cherry,
@@ -26,18 +26,24 @@ const REEL_SYMBOLS: Sym[] = [
   Sym.bar,
   Sym.seven,
   Sym.diamond,
+  Sym.star,
+  Sym.horseshoe,
 ];
 
-function randomSymbols(): Sym[] {
+function randomGrid(): Sym[][] {
   return Array.from({ length: 5 }, () =>
-    REEL_SYMBOLS[Math.floor(Math.random() * REEL_SYMBOLS.length)],
+    Array.from({ length: 3 }, () =>
+      REEL_SYMBOLS[Math.floor(Math.random() * REEL_SYMBOLS.length)],
+    ),
   );
 }
 
 const spinHistory: Array<{
   id: bigint;
   won: boolean;
-  symbols: Sym[];
+  reels: Sym[][];
+  activeLines: bigint;
+  winningLines: bigint[];
   timestamp: bigint;
   wager: bigint;
   payout: bigint;
@@ -45,7 +51,15 @@ const spinHistory: Array<{
   {
     id: 1n,
     won: true,
-    symbols: [Sym.seven, Sym.seven, Sym.seven, Sym.bar, Sym.cherry],
+    reels: [
+      [Sym.seven, Sym.seven, Sym.cherry],
+      [Sym.seven, Sym.seven, Sym.lemon],
+      [Sym.seven, Sym.bell, Sym.bar],
+      [Sym.bar, Sym.cherry, Sym.diamond],
+      [Sym.cherry, Sym.lemon, Sym.diamond],
+    ],
+    activeLines: 1n,
+    winningLines: [0n],
     timestamp: BigInt(Date.now() - 60_000) * 1_000_000n,
     wager: SPIN_COST,
     payout: 10_000_000n,
@@ -53,9 +67,17 @@ const spinHistory: Array<{
   {
     id: 0n,
     won: false,
-    symbols: [Sym.cherry, Sym.lemon, Sym.bell, Sym.bar, Sym.diamond],
+    reels: [
+      [Sym.cherry, Sym.lemon, Sym.bell],
+      [Sym.lemon, Sym.bell, Sym.bar],
+      [Sym.bell, Sym.bar, Sym.seven],
+      [Sym.bar, Sym.seven, Sym.diamond],
+      [Sym.seven, Sym.diamond, Sym.cherry],
+    ],
+    activeLines: 3n,
+    winningLines: [],
     timestamp: BigInt(Date.now() - 120_000) * 1_000_000n,
-    wager: SPIN_COST,
+    wager: SPIN_COST * 3n,
     payout: 0n,
   },
 ];
@@ -82,8 +104,6 @@ const transactions: Array<{
 ];
 
 export const mockBackend: backendInterface = {
-  // Stable-state inspection helpers (data-viewer / admin introspection).
-  // Return empty records so any dev harness that calls them gets a safe shape.
   async __accessControlState() {
     return {};
   },
@@ -150,21 +170,31 @@ export const mockBackend: backendInterface = {
   async isCallerAdmin() {
     return false;
   },
-  async spin() {
-    balance -= SPIN_COST;
-    const symbols = randomSymbols();
-    const won = symbols.every((s) => s === symbols[0]);
+  async spin(activeLines: bigint) {
+    const wager = SPIN_COST * activeLines;
+    balance -= wager;
+    const reels = randomGrid();
+    const won = reels[0][1] === reels[1][1] && reels[1][1] === reels[2][1];
     const payout = won ? 10_000_000n : 0n;
     if (won) balance += payout;
     spinHistory.unshift({
       id: BigInt(spinHistory.length),
       won,
-      symbols,
+      reels,
+      activeLines,
+      winningLines: won ? [0n] : [],
       timestamp: BigInt(Date.now()) * 1_000_000n,
-      wager: SPIN_COST,
+      wager,
       payout,
     });
-    return { won, symbols, payout };
+    return {
+      won,
+      reels,
+      activeLines,
+      wager,
+      payout,
+      winningLines: won ? [0n] : [],
+    };
   },
   async transfer() {
     return { __kind__: "ok" as const, ok: { amount: 1_000_000n } };

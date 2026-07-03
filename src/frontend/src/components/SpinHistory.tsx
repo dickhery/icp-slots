@@ -10,10 +10,27 @@ import type { SpinRecord } from "@/types";
 import { SYMBOL_META, formatIcp } from "@/types";
 
 interface SpinHistoryProps {
-  /** Recent spins, newest first. */
   spins: SpinRecord[];
-  /** True while the history query is loading. */
   isLoading: boolean;
+}
+
+/** Compact 5×3 grid preview for a spin record. */
+function MiniGrid({ reels }: { reels: SpinRecord["reels"] }) {
+  return (
+    <div className="grid grid-cols-5 gap-0.5">
+      {reels.map((column, colIdx) =>
+        column.map((sym) => (
+          <span
+            key={`${colIdx}-${sym}`}
+            className="grid size-6 place-items-center rounded bg-background/70 text-xs font-bold sm:size-7 sm:text-sm"
+            aria-label={SYMBOL_META[sym].label}
+          >
+            {SYMBOL_META[sym].glyph}
+          </span>
+        )),
+      )}
+    </div>
+  );
 }
 
 /** Recent spin results for the signed-in player. */
@@ -59,24 +76,14 @@ export function SpinHistory({ spins, isLoading }: SpinHistoryProps) {
                 key={spin.id.toString()}
                 data-ocid={`spinhistory.item.${i + 1}`}
                 className={cn(
-                  "flex items-center justify-between rounded-md border px-3 py-2.5 transition-smooth",
+                  "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5 transition-smooth",
                   spin.won
                     ? "border-accent/40 bg-accent/10"
                     : "border-border/50 bg-background/40",
                 )}
               >
-                <div className="flex items-center gap-2">
-                  {spin.symbols.map((sym) => (
-                    <span
-                      key={sym}
-                      className="grid size-8 place-items-center rounded bg-background/70 text-base font-bold"
-                      aria-label={SYMBOL_META[sym].label}
-                    >
-                      {SYMBOL_META[sym].glyph}
-                    </span>
-                  ))}
-                </div>
-                <div className="text-right">
+                <MiniGrid reels={spin.reels} />
+                <div className="shrink-0 text-right">
                   <p
                     className={cn(
                       "font-mono text-sm font-semibold",
@@ -88,7 +95,9 @@ export function SpinHistory({ spins, isLoading }: SpinHistoryProps) {
                       : `-${formatIcp(spin.wager)} ICP`}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {spin.won ? "Win" : "No win"}
+                    {spin.won
+                      ? `${spin.winningLines.length} line${spin.winningLines.length === 1 ? "" : "s"}`
+                      : `${Number(spin.activeLines)} lines`}
                   </p>
                 </div>
               </li>

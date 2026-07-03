@@ -8,64 +8,61 @@ import { SYMBOL_META } from "@/types";
 const ALL_SYMBOLS = Object.keys(SYMBOL_META) as SlotSymbol[];
 
 /** Number of symbol cells rendered in the spinning strip (must exceed viewport). */
-const STRIP_LENGTH = 24;
+const STRIP_LENGTH = 30;
 
 interface ReelProps {
-  /** Final symbol to land on after the spin completes. */
-  target: SlotSymbol;
-  /** When true, the reel spins; when false, it rests on `target`. */
+  /** Final symbols to land on: [top, middle, bottom]. */
+  targets: [SlotSymbol, SlotSymbol, SlotSymbol];
   spinning: boolean;
-  /** Stagger index (0-based) so reels stop sequentially. */
   index: number;
-  /** Base spin duration in ms before applying the per-reel stagger. */
   durationMs?: number;
 }
 
-/**
- * Build a strip that ends on `target` at the visible cell.
- * The visible (resting) cell is the last item in the strip; the strip
- * translates upward until that final cell is in view.
- */
-function buildStrip(target: SlotSymbol): SlotSymbol[] {
+function buildStrip(
+  targets: [SlotSymbol, SlotSymbol, SlotSymbol],
+): SlotSymbol[] {
   const strip: SlotSymbol[] = [];
-  for (let i = 0; i < STRIP_LENGTH - 1; i++) {
+  for (let i = 0; i < STRIP_LENGTH - 3; i++) {
     strip.push(ALL_SYMBOLS[i % ALL_SYMBOLS.length]);
   }
-  strip.push(target);
+  strip.push(...targets);
   return strip;
 }
 
-/** A single vertical reel with a spinning animation that lands on `target`. */
-export function Reel({ target, spinning, index, durationMs = 900 }: ReelProps) {
-  const [strip, setStrip] = useState<SlotSymbol[]>(() => buildStrip(target));
+/** A single vertical reel showing three rows with a spinning animation. */
+export function Reel({
+  targets,
+  spinning,
+  index,
+  durationMs = 900,
+}: ReelProps) {
+  const [strip, setStrip] = useState<SlotSymbol[]>(() => buildStrip(targets));
   const [phase, setPhase] = useState<"rest" | "spin" | "land">("rest");
   const stripRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (spinning) {
-      // Rebuild the strip with a fresh random-ish sequence ending on target.
-      setStrip(buildStrip(target));
+      setStrip(buildStrip(targets));
       setPhase("spin");
       const landDelay = durationMs + index * 180;
       const t = window.setTimeout(() => setPhase("land"), landDelay);
       return () => window.clearTimeout(t);
     }
     setPhase("rest");
-  }, [spinning, target, index, durationMs]);
+  }, [spinning, targets, index, durationMs]);
 
-  const cellPx = 96; // h-24
+  const cellPx = 80;
+  const visibleRows = 3;
   const stripHeight = strip.length * cellPx;
-  // Translate so the final cell lands in the single visible row.
-  const restOffset = stripHeight - cellPx;
+  const restOffset = stripHeight - visibleRows * cellPx;
 
   return (
     <div
-      className="relative h-24 w-24 overflow-hidden rounded-lg reel-edge ring-1 ring-border/60 sm:h-28 sm:w-28"
+      className="relative h-[15rem] w-20 overflow-hidden rounded-lg reel-edge ring-1 ring-border/60 sm:h-[17.5rem] sm:w-24"
       aria-label={`Reel ${index + 1}`}
     >
-      {/* Top + bottom fade for depth */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-6 bg-gradient-to-b from-background/80 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-6 bg-gradient-to-t from-background/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background/80 to-transparent" />
 
       <div
         ref={stripRef}
@@ -87,12 +84,12 @@ export function Reel({ target, spinning, index, durationMs = 900 }: ReelProps) {
       >
         {strip.map((sym, i) => {
           const meta = SYMBOL_META[sym];
-          const isFinal = i === strip.length - 1;
+          const isFinal = i >= strip.length - 3;
           return (
             <div
-              key={sym}
+              key={`${sym}-${strip.length - i}`}
               className={cn(
-                "grid h-24 w-24 place-items-center sm:h-28 sm:w-28",
+                "grid h-20 w-20 place-items-center sm:h-[5.833rem] sm:w-24",
                 isFinal && phase === "land" && "animate-win-flash",
               )}
             >
@@ -121,14 +118,14 @@ function SymbolCell({
           ? "text-warning"
           : "text-primary";
 
-  // "7" and "BAR" render as bold text glyphs; emoji symbols render large.
-  const isText = symbol === "seven" || symbol === "bar";
+  const isText =
+    symbol === "seven" || symbol === "bar" || symbol === "horseshoe";
 
   return (
     <span
       className={cn(
         "font-display font-bold leading-none",
-        isText ? "text-3xl sm:text-4xl" : "text-5xl sm:text-6xl",
+        isText ? "text-2xl sm:text-3xl" : "text-4xl sm:text-5xl",
         accentText,
       )}
       aria-label={meta.label}
