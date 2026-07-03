@@ -60,6 +60,9 @@ export const ICP_DECIMALS = 8;
 /** Per-line spin cost: 0.01 ICP (in e8s). */
 export const SPIN_COST_E8S = 1_000_000n;
 
+/** Current ICP ledger transfer fee; the backend handles runtime fee changes. */
+export const ICP_LEDGER_FEE_E8S = 10_000n;
+
 /** Allowed active payline counts. */
 export const LINE_OPTIONS = [1, 3, 5, 9] as const;
 export type LineCount = (typeof LINE_OPTIONS)[number];

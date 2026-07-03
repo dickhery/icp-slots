@@ -85,6 +85,7 @@ module {
     balance : Common.Tokens;
     ledgerHouse : Common.Tokens;
     ledgerDefault : Common.Tokens;
+    warning : ?Text;
   };
 
   // Aggregate house stats (admin view).
@@ -98,7 +99,18 @@ module {
 
   // Result of a transfer request.
   public type TransferResult = {
-    #ok : { amount : Common.Tokens };
+    #ok : {
+      amount : Common.Tokens;
+      fee : Common.Tokens;
+      blockIndex : Nat;
+    };
+    #err : Text;
+  };
+
+  // A spin can fail cleanly after an asynchronous ledger call. Returning a
+  // variant avoids trapping after an await, which could strand reserved funds.
+  public type SpinResult = {
+    #ok : SpinOutcome;
     #err : Text;
   };
 };

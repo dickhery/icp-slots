@@ -82,12 +82,8 @@ export function HouseDepositCard() {
   } | null>(null);
 
   let primaryHex = "";
-  let alternateHex = "";
   try {
     primaryHex = data ? accountIdToHex(data.accountId) : "";
-    alternateHex = data?.legacyAccountId
-      ? accountIdToHex(data.legacyAccountId)
-      : "";
   } catch (e) {
     console.error("Invalid house deposit account identifier", e);
   }
@@ -102,6 +98,12 @@ export function HouseDepositCard() {
         default: result.ledgerDefault,
         house: result.ledgerHouse,
       });
+      if (result.warning) {
+        toast.warning("House sync needs attention", {
+          description: result.warning,
+        });
+        return;
+      }
       if (result.credited > 0n) {
         toast.success("House funded", {
           description: `+${formatIcp(result.credited)} ICP added to house balance (${formatIcp(result.balance)} ICP total).`,
@@ -153,22 +155,12 @@ export function HouseDepositCard() {
             Could not load house deposit address. Sign in as admin and refresh.
           </p>
         ) : (
-          <>
-            <CopyableAccountId
-              label="House deposit account identifier (paste into your wallet)"
-              hex={primaryHex}
-              copyLabel="House deposit account ID copied"
-              dataOcid="admin.house_deposit.account_id"
-            />
-            {alternateHex ? (
-              <CopyableAccountId
-                label="Alternate house subaccount (only if directed here)"
-                hex={alternateHex}
-                copyLabel="Alternate account ID copied"
-                dataOcid="admin.house_deposit.legacy_account_id"
-              />
-            ) : null}
-          </>
+          <CopyableAccountId
+            label="Canonical house vault account identifier"
+            hex={primaryHex}
+            copyLabel="House vault account ID copied"
+            dataOcid="admin.house_deposit.account_id"
+          />
         )}
 
         {canisterText && (
@@ -185,8 +177,10 @@ export function HouseDepositCard() {
 
         {lastLedger && (
           <p className="rounded-md border border-border/50 bg-background/50 px-3 py-2 font-mono text-[11px] text-muted-foreground">
-            Last ledger check: {formatIcp(lastLedger.default)} ICP default ·{" "}
-            {formatIcp(lastLedger.house)} ICP house subaccount
+            Last ledger check: {formatIcp(lastLedger.house)} ICP in house vault
+            {lastLedger.default > 0n
+              ? ` · ${formatIcp(lastLedger.default)} ICP legacy balance`
+              : ""}
           </p>
         )}
 
@@ -194,8 +188,10 @@ export function HouseDepositCard() {
           In NNS, Oisy, or another ICP wallet, choose <em>Send ICP</em> and
           paste the 64-character account identifier above as the destination. Do
           not enter the canister principal alone — that is a different address.
-          After the transfer confirms, tap sync to credit the playable house
-          pool.
+          This is the same canister-owned vault that receives wagers and pays
+          winners. After the transfer confirms, tap sync. Funds sent to the
+          address used by older builds are swept here automatically when
+          possible.
         </p>
 
         <Button

@@ -54,7 +54,7 @@ export function BalanceCard() {
                 Your Balance
               </CardTitle>
               <CardDescription className="text-xs">
-                In-canister balance tied to your Internet Identity principal
+                ICP ledger balance in your canister-managed player account
               </CardDescription>
             </div>
           </div>

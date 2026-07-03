@@ -39,6 +39,12 @@ export function DepositAccountCard() {
     setSyncing(true);
     try {
       const result = await syncDeposit();
+      if (result.warning) {
+        toast.error("Deposit sync failed", {
+          description: result.warning,
+        });
+        return;
+      }
       if (result.credited > 0n) {
         toast.success("Deposit received", {
           description: `+${formatIcp(result.credited)} ICP added to your balance.`,

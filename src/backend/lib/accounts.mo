@@ -2,7 +2,10 @@ import Principal "mo:core/Principal";
 import Common "../types/common";
 
 module {
-  /** Dedicated 32-byte subaccount for house vault funding (byte 0 = 1, rest zero). */
+  /**
+   * Canonical 32-byte subaccount for the house vault (byte 0 = 1, rest zero).
+   * All wagers, payouts, and admin-controlled house transfers use this account.
+   */
   public let houseSubAccount : Common.SubAccount = "\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00";
 
   /** Compute the legacy ICP ledger account identifier for owner + subaccount. */
@@ -18,7 +21,11 @@ module {
     owner.toLedgerAccount(?houseSubAccount);
   };
 
-  /** Canister default ledger account (no subaccount) — legacy house funding path. */
+  /**
+   * Canister default ledger account (no subaccount). This is retained only so
+   * deposits sent to the address shown by older builds can be swept into the
+   * canonical house vault.
+   */
   public func defaultAccountIdentifier(owner : Principal) : Common.AccountIdentifier {
     owner.toLedgerAccount(null);
   };

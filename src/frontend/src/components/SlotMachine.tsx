@@ -10,7 +10,7 @@ import type {
   ReelGrid,
   SlotSymbol as SlotSymbolType,
 } from "@/types";
-import { computeWager, formatIcp } from "@/types";
+import { ICP_LEDGER_FEE_E8S, computeWager, formatIcp } from "@/types";
 import { LineSelector } from "./LineSelector";
 import { Payline } from "./Payline";
 import { Reel } from "./Reel";
@@ -50,7 +50,8 @@ export function SlotMachine() {
   const spinSettleMs = reelDurationMs + (reelCount - 1) * reelStaggerMs + 250;
 
   const wager = computeWager(activeLines);
-  const insufficientFunds = balance.e8s !== null && balance.e8s < wager;
+  const totalDebit = wager + ICP_LEDGER_FEE_E8S;
+  const insufficientFunds = balance.e8s !== null && balance.e8s < totalDebit;
 
   const handleSpin = async () => {
     if (spinning) return;
@@ -175,7 +176,7 @@ export function SlotMachine() {
           <p className="text-sm text-muted-foreground">
             {insufficientFunds
               ? "Insufficient balance — top up your wallet to spin."
-              : `${formatIcp(wager)} ICP per spin · ${history.length} spins played`}
+              : `${formatIcp(wager)} ICP per spin + ${formatIcp(ICP_LEDGER_FEE_E8S)} fee · ${history.length} spins played`}
           </p>
         )}
       </div>

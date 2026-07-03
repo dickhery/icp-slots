@@ -187,11 +187,16 @@ export function useSpin() {
   return useCallback(
     async (activeLines: number): Promise<SpinOutcome> => {
       if (!actor) throw new Error("Actor not ready");
-      const outcome = await actor.spin(BigInt(activeLines));
+      const result = await actor.spin(BigInt(activeLines));
+      if (result.__kind__ === "err") {
+        throw new Error(result.err);
+      }
       await queryClient.invalidateQueries({ queryKey: ["balance"] });
       await queryClient.invalidateQueries({ queryKey: ["spinHistory"] });
       await queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
-      return outcome;
+      await queryClient.invalidateQueries({ queryKey: ["houseBalance"] });
+      await queryClient.invalidateQueries({ queryKey: ["houseStats"] });
+      return result.ok;
     },
     [actor, queryClient],
   );

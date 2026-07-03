@@ -16,7 +16,11 @@ type TxKind =
 type TransferResult = 
  variant {
    err: text;
-   ok: record {amount: Tokens;};
+   ok: record {
+         amount: Tokens;
+         blockIndex: nat;
+         fee: Tokens;
+       };
  };
 type Transaction = 
  record {
@@ -34,6 +38,7 @@ type SyncDepositResult =
    credited: Tokens;
    ledgerDefault: Tokens;
    ledgerHouse: Tokens;
+   warning: opt text;
  };
 type Symbol = 
  variant {
@@ -45,6 +50,11 @@ type Symbol =
    lemon;
    seven;
    star;
+ };
+type SpinResult =
+ variant {
+   err: text;
+   ok: SpinOutcome;
  };
 type SpinRecord = 
  record {
@@ -137,7 +147,7 @@ service : {
   getSpinHistory: () -> (vec SpinRecord) query;
   getTransactionHistory: () -> (vec Transaction) query;
   isCallerAdmin: () -> (bool) query;
-  spin: (activeLines: nat) -> (SpinOutcome);
+  spin: (activeLines: nat) -> (SpinResult);
   syncDeposit: () -> (SyncDepositResult);
   syncHouseDeposit: () -> (SyncDepositResult);
   transfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);

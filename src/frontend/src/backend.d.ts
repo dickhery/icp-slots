@@ -86,6 +86,8 @@ export type Result = {
 export type TransferResult = {
     __kind__: "ok";
     ok: {
+        fee: Tokens;
+        blockIndex: bigint;
         amount: Tokens;
     };
 } | {
@@ -102,6 +104,7 @@ export interface SpinOutcome {
     payout: Tokens;
 }
 export interface SyncDepositResult {
+    warning?: string;
     balance: Tokens;
     ledgerDefault: Tokens;
     ledgerHouse: Tokens;
@@ -111,6 +114,13 @@ export interface PlayerView {
     id: UserId;
     balance: Tokens;
 }
+export type SpinResult = {
+    __kind__: "ok";
+    ok: SpinOutcome;
+} | {
+    __kind__: "err";
+    err: string;
+};
 export interface HouseStats {
     totalWagered: Tokens;
     totalPaidOut: Tokens;
@@ -154,7 +164,7 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(activeLines: bigint): Promise<SpinOutcome>;
+    spin(activeLines: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;

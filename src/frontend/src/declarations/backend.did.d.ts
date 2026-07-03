@@ -60,6 +60,8 @@ export interface SpinRecord {
   'reels' : ReelGrid,
   'payout' : Tokens,
 }
+export type SpinResult = { 'ok' : SpinOutcome } |
+  { 'err' : string };
 export type Symbol = { 'bar' : null } |
   { 'bell' : null } |
   { 'star' : null } |
@@ -69,6 +71,7 @@ export type Symbol = { 'bar' : null } |
   { 'seven' : null } |
   { 'cherry' : null };
 export interface SyncDepositResult {
+  'warning' : [] | [string],
   'balance' : Tokens,
   'ledgerDefault' : Tokens,
   'ledgerHouse' : Tokens,
@@ -83,7 +86,9 @@ export interface Transaction {
   'timestamp' : Timestamp,
   'amount' : Tokens,
 }
-export type TransferResult = { 'ok' : { 'amount' : Tokens } } |
+export type TransferResult = {
+    'ok' : { 'fee' : Tokens, 'blockIndex' : bigint, 'amount' : Tokens }
+  } |
   { 'err' : string };
 export type TxKind = { 'win' : null } |
   { 'spinCost' : null } |
@@ -117,7 +122,7 @@ export interface _SERVICE {
   'getSpinHistory' : ActorMethod<[], Array<SpinRecord>>,
   'getTransactionHistory' : ActorMethod<[], Array<Transaction>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'spin' : ActorMethod<[bigint], SpinOutcome>,
+  'spin' : ActorMethod<[bigint], SpinResult>,
   'syncDeposit' : ActorMethod<[], SyncDepositResult>,
   'syncHouseDeposit' : ActorMethod<[], SyncDepositResult>,
   'transfer' : ActorMethod<[AccountIdentifier, Tokens], TransferResult>,

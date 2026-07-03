@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminTransfer, useHouseBalance } from "@/hooks/use-backend";
 import type { AccountIdentifier, TransferResult } from "@/types";
-import { formatIcp } from "@/types";
+import { ICP_LEDGER_FEE_E8S, formatIcp } from "@/types";
 import { Send, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -71,8 +71,8 @@ export function AdminTransferForm() {
     const e8s = parseIcpAmount(value);
     if (e8s === null) return "Enter a valid ICP amount (e.g. 1.25)";
     if (e8s <= 0n) return "Amount must be greater than 0";
-    if (e8s > maxBalance) {
-      return `Amount exceeds house balance (${formatIcp(maxBalance)} ICP)`;
+    if (e8s + ICP_LEDGER_FEE_E8S > maxBalance) {
+      return `Amount plus the ledger fee exceeds house balance (${formatIcp(maxBalance)} ICP)`;
     }
     return null;
   };
@@ -102,9 +102,9 @@ export function AdminTransferForm() {
     try {
       const result: TransferResult = await adminTransfer(to, e8s);
       if (result.__kind__ === "ok") {
-        toast.success(
-          `Transferred ${formatIcp(result.ok.amount)} ICP to external account`,
-        );
+        toast.success(`Transferred ${formatIcp(result.ok.amount)} ICP`, {
+          description: `Confirmed at block ${result.ok.blockIndex.toString()} (${formatIcp(result.ok.fee)} ICP fee).`,
+        });
         setAddress("");
         setAmount("");
         setAddressError(null);

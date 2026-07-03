@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTransfer } from "@/hooks/use-backend";
 import { useBalance } from "@/hooks/use-balance";
-import { formatIcp } from "@/types";
+import { ICP_LEDGER_FEE_E8S, formatIcp } from "@/types";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -93,8 +93,9 @@ export function TransferForm() {
     }
     if (!amountE8s) {
       next.amount = "Enter an amount greater than 0.";
-    } else if (amountE8s > balanceE8s) {
-      next.amount = "Amount exceeds your available balance.";
+    } else if (amountE8s + ICP_LEDGER_FEE_E8S > balanceE8s) {
+      next.amount =
+        "Amount plus the ICP ledger fee exceeds your available balance.";
     }
     return next;
   };
@@ -120,7 +121,7 @@ export function TransferForm() {
       const result = await transfer(bytes, amountE8s);
       if (result.__kind__ === "ok") {
         toast.success("Transfer sent", {
-          description: `${formatIcp(result.ok.amount)} ICP is on its way.`,
+          description: `${formatIcp(result.ok.amount)} ICP sent at block ${result.ok.blockIndex.toString()} (${formatIcp(result.ok.fee)} ICP fee).`,
         });
         setAddress("");
         setAmount("");
@@ -240,7 +241,7 @@ export function TransferForm() {
             </p>
           ) : (
             <p className="text-[11px] text-muted-foreground">
-              Transfers are sent immediately and cannot be reversed.
+              A {formatIcp(ICP_LEDGER_FEE_E8S)} ICP ledger fee also applies.
             </p>
           )}
         </div>

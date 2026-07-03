@@ -101,7 +101,7 @@ export function HouseBalanceCard() {
               aria-hidden="true"
             />
             <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-              {formatIcp(balance)} ICP available for transfer
+              {formatIcp(balance)} ICP in the payout vault before ledger fees
             </span>
           </div>
         </motion.div>

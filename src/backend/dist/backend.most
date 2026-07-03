@@ -1,31 +1,31 @@
 // Version: 4.0.0
-type AccessControlState__916381303 =
+type AccessControlState__158890702 =
   {
     var adminAssigned : Bool;
-    userRoles : Map__166311111<Principal, UserRole__116561005>
+    userRoles : Map__222667396<Principal, UserRole__280136427>
   };
-type AccountIdentifier__675396873 = Blob;
-type Data__462339193<K, V> =
-  {var count : Nat__796014343; kvs : [var ?(K, V)]};
-type Internal__572103086<K, V> =
-  {children : [var ?Node__305750417<K, V>]; data : Data__462339193<K, V>};
-type Leaf__868027<K, V> = {data : Data__462339193<K, V>};
-type List__15450531<T> =
+type AccountIdentifier__461726824 = Blob;
+type Data__80296667<K, V> =
+  {var count : Nat__1040412405; kvs : [var ?(K, V)]};
+type Internal__41346355<K, V> =
+  {children : [var ?Node__1000929467<K, V>]; data : Data__80296667<K, V>};
+type Leaf__712614010<K, V> = {data : Data__80296667<K, V>};
+type List__529703492<T> =
   {
-    var blockIndex : Nat__796014343;
+    var blockIndex : Nat__1040412405;
     var blocks : [var [var ?T]];
-    var elementIndex : Nat__796014343
+    var elementIndex : Nat__1040412405
   };
-type List__653618698<T> = List__15450531<T>;
-type Map__166311111<K, V> = Map__807666924<K, V>;
-type Map__807666924<K, V> = Map__891571397<K, V>;
-type Map__891571397<K, V> =
-  {var root : Node__305750417<K, V>; var size : Nat__796014343};
-type Nat__796014343 = Nat__920180692;
+type List__560604548<T> = List__529703492<T>;
+type Map__222667396<K, V> = Map__912772452<K, V>;
+type Map__709709801<K, V> =
+  {var root : Node__1000929467<K, V>; var size : Nat__1040412405};
+type Map__912772452<K, V> = Map__709709801<K, V>;
+type Nat__1040412405 = Nat__920180692;
 type Nat__920180692 = Nat;
-type NewActor__310080401 =
+type NewActor__749762360 =
   {
-    var accessControlState : AccessControlState__916381303;
+    var accessControlState : AccessControlState__158890702;
     var aggregateStats :
       {
         var houseRetained : Nat;
@@ -35,176 +35,176 @@ type NewActor__310080401 =
       };
     var counters : {var nextSpinId : Nat; var nextTxId : Nat};
     var houseBalance : {var balance : Nat};
-    var players : Map__166311111<Principal, Player__934673227>;
+    var players : Map__222667396<Principal, Player__757786787>;
     var spinHistory :
-      Map__166311111<Principal, List__653618698<SpinRecord__902757050>>;
+      Map__222667396<Principal, List__560604548<SpinRecord__853925053>>;
     var transactions :
-      Map__166311111<Principal, List__653618698<Transaction__236262560>>
+      Map__222667396<Principal, List__560604548<Transaction__210366819>>
   };
-type NewHouseBalance__121789083 =
+type NewHouseBalance__697168376 =
+  {var balance : Nat; var creditedLedgerBalance : Nat};
+type NewHouseBalance__87812985 =
   {
     var balance : Nat;
     var creditedDefaultLedger : Nat;
     var creditedHouseLedger : Nat
   };
-type NewHouseBalance__866847553 =
-  {var balance : Nat; var creditedLedgerBalance : Nat};
-type NewPlayer__513285823 =
+type NewPlayer__238612469 =
   {
     var balance : Nat;
     var creditedLedgerBalance : Nat;
     id : Principal;
     subAccount : Blob
   };
-type Node__305750417<K, V> =
-  {#internal : Internal__572103086<K, V>; #leaf : Leaf__868027<K, V>};
-type OldActor__856589358 = {};
-type OldHouseBalance__1003053323 = {var balance : Nat};
-type OldHouseBalance__934206148 =
+type Node__1000929467<K, V> =
+  {#internal : Internal__41346355<K, V>; #leaf : Leaf__712614010<K, V>};
+type OldActor__342793170 = {};
+type OldHouseBalance__536010646 =
   {var balance : Nat; var creditedLedgerBalance : Nat};
-type OldPlayer__388683541 =
+type OldHouseBalance__944033090 = {var balance : Nat};
+type OldPlayer__293116044 =
   {var balance : Nat; id : Principal; subAccount : Blob};
-type OldSpinRecord__312717468 =
+type OldSpinRecord__1054762725 =
   {
     id : Nat;
     payout : Nat;
-    symbols : [OldSymbol__584154943];
+    symbols : [OldSymbol__423923489];
     timestamp : Nat;
     wager : Nat;
     won : Bool
   };
-type OldSymbol__584154943 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
-type Player__256311133 =
+type OldSymbol__423923489 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
+type Player__246356608 =
   {
-    var balance : Tokens__151796392;
-    var creditedLedgerBalance : Tokens__151796392;
-    id : UserId__653285603;
-    subAccount : SubAccount__963172435
+    var balance : Tokens__622829522;
+    var creditedLedgerBalance : Tokens__622829522;
+    id : UserId__158757552;
+    subAccount : SubAccount__249903116
   };
-type Player__934673227 =
+type Player__757786787 =
   {var balance : Nat; id : Principal; subAccount : Blob};
-type ReelGrid__28870947 = [[Symbol__494242018]];
-type SpinRecord__162179125 =
+type ReelGrid__978842920 = [[Symbol__51281560]];
+type SpinRecord__559830098 =
   {
     activeLines : Nat;
     id : Nat;
-    payout : Tokens__151796392;
-    reels : ReelGrid__28870947;
-    timestamp : Timestamp__867202833;
-    wager : Tokens__151796392;
+    payout : Tokens__622829522;
+    reels : ReelGrid__978842920;
+    timestamp : Timestamp__301639476;
+    wager : Tokens__622829522;
     winningLines : [Nat];
     won : Bool
   };
-type SpinRecord__25698017 =
+type SpinRecord__853925053 =
+  {
+    id : Nat;
+    payout : Nat;
+    symbols : [Symbol__151019658];
+    timestamp : Nat;
+    wager : Nat;
+    won : Bool
+  };
+type SpinRecord__905331641 =
   {
     activeLines : Nat;
     id : Nat;
     payout : Nat;
-    reels : [[Symbol__528397727]];
+    reels : [[Symbol__918409992]];
     timestamp : Nat;
     wager : Nat;
     winningLines : [Nat];
     won : Bool
   };
-type SpinRecord__902757050 =
-  {
-    id : Nat;
-    payout : Nat;
-    symbols : [Symbol__174410647];
-    timestamp : Nat;
-    wager : Nat;
-    won : Bool
-  };
-type SubAccount__963172435 = Blob;
-type Symbol__174410647 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
-type Symbol__494242018 =
+type SubAccount__249903116 = Blob;
+type Symbol__151019658 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
+type Symbol__51281560 =
   {#bar; #bell; #cherry; #diamond; #horseshoe; #lemon; #seven; #star};
-type Symbol__528397727 =
+type Symbol__918409992 =
   {#bar; #bell; #cherry; #diamond; #horseshoe; #lemon; #seven; #star};
-type Timestamp__867202833 = Nat;
-type Tokens__151796392 = Nat;
-type Transaction__236262560 =
+type Timestamp__301639476 = Nat;
+type Tokens__622829522 = Nat;
+type Transaction__210366819 =
   {
     amount : Nat;
     counterparty : ?Blob;
     id : Nat;
-    kind : TxKind__781481280;
+    kind : TxKind__396941721;
     timestamp : Nat
   };
-type Transaction__70201685 =
+type Transaction__902413890 =
   {
-    amount : Tokens__151796392;
-    counterparty : ?AccountIdentifier__675396873;
+    amount : Tokens__622829522;
+    counterparty : ?AccountIdentifier__461726824;
     id : Nat;
-    kind : TxKind__1000675751;
-    timestamp : Timestamp__867202833
+    kind : TxKind__670715900;
+    timestamp : Timestamp__301639476
   };
-type TxKind__1000675751 =
+type TxKind__396941721 =
   {#adminTransferOut; #spinCost; #transferIn; #transferOut; #win};
-type TxKind__781481280 =
+type TxKind__670715900 =
   {#adminTransferOut; #spinCost; #transferIn; #transferOut; #win};
-type UserId__653285603 = Principal;
-type UserRole__116561005 = {#admin; #guest; #user};
-type UserRole__364273487 = {#admin; #guest; #user};
+type UserId__158757552 = Principal;
+type UserRole__280136427 = {#admin; #guest; #user};
+type UserRole__686137147 = {#admin; #guest; #user};
 {
-  "20260703_031625" : (_old : OldActor__856589358) -> NewActor__310080401;
+  "20260703_031625" : (_old : OldActor__342793170) -> NewActor__749762360;
   "20260703_120000_MultiPayline" :
     (old : {
              spinHistory :
-               Map__166311111<Principal,
-                               List__653618698<OldSpinRecord__312717468>>
+               Map__222667396<Principal,
+                               List__560604548<OldSpinRecord__1054762725>>
            }) ->
       {
         spinHistory :
-          Map__166311111<Principal, List__653618698<SpinRecord__25698017>>
+          Map__222667396<Principal, List__560604548<SpinRecord__905331641>>
       };
   "20260703_180000_DepositAccounts" :
-    (old : {players : Map__166311111<Principal, OldPlayer__388683541>}) ->
-      {players : Map__166311111<Principal, NewPlayer__513285823>};
+    (old : {players : Map__222667396<Principal, OldPlayer__293116044>}) ->
+      {players : Map__222667396<Principal, NewPlayer__238612469>};
   "20260703_200000_HouseLedgerSync" :
-    (old : {houseBalance : OldHouseBalance__1003053323}) ->
-      {houseBalance : NewHouseBalance__866847553};
+    (old : {houseBalance : OldHouseBalance__944033090}) ->
+      {houseBalance : NewHouseBalance__697168376};
   "20260703_210000_HouseDepositLedgerSplit" :
-    (old : {houseBalance : OldHouseBalance__934206148}) ->
-      {houseBalance : NewHouseBalance__121789083}
+    (old : {houseBalance : OldHouseBalance__536010646}) ->
+      {houseBalance : NewHouseBalance__87812985}
 }
 actor  {
   stable accessControlState :
     {
       var adminAssigned : Bool;
-      userRoles : Map__166311111<Principal, UserRole__364273487>
+      userRoles : Map__222667396<Principal, UserRole__686137147>
     };
   stable aggregateStats :
     {
-      var houseRetained : Tokens__151796392;
-      var totalPaidOut : Tokens__151796392;
+      var houseRetained : Tokens__622829522;
+      var totalPaidOut : Tokens__622829522;
       var totalSpins : Nat;
-      var totalWagered : Tokens__151796392
+      var totalWagered : Tokens__622829522
     };
   stable counters : {var nextSpinId : Nat; var nextTxId : Nat};
   stable houseBalance :
     {
-      var balance : Tokens__151796392;
-      var creditedDefaultLedger : Tokens__151796392;
-      var creditedHouseLedger : Tokens__151796392
+      var balance : Tokens__622829522;
+      var creditedDefaultLedger : Tokens__622829522;
+      var creditedHouseLedger : Tokens__622829522
     };
   stable players :
     {
-      var root : Node__305750417<UserId__653285603, Player__256311133>;
-      var size : Nat__796014343
+      var root : Node__1000929467<UserId__158757552, Player__246356608>;
+      var size : Nat__1040412405
     };
   stable spinHistory :
     {
       var root :
-        Node__305750417<UserId__653285603,
-                         List__653618698<SpinRecord__162179125>>;
-      var size : Nat__796014343
+        Node__1000929467<UserId__158757552,
+                          List__560604548<SpinRecord__559830098>>;
+      var size : Nat__1040412405
     };
   stable transactions :
     {
       var root :
-        Node__305750417<UserId__653285603,
-                         List__653618698<Transaction__70201685>>;
-      var size : Nat__796014343
+        Node__1000929467<UserId__158757552,
+                          List__560604548<Transaction__902413890>>;
+      var size : Nat__1040412405
     }
 };

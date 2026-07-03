@@ -132,6 +132,8 @@ export type Result = {
 export type TransferResult = {
     __kind__: "ok";
     ok: {
+        fee: Tokens;
+        blockIndex: bigint;
         amount: Tokens;
     };
 } | {
@@ -148,6 +150,7 @@ export interface SpinOutcome {
     payout: Tokens;
 }
 export interface SyncDepositResult {
+    warning?: string;
     balance: Tokens;
     ledgerDefault: Tokens;
     ledgerHouse: Tokens;
@@ -157,6 +160,13 @@ export interface PlayerView {
     id: UserId;
     balance: Tokens;
 }
+export type SpinResult = {
+    __kind__: "ok";
+    ok: SpinOutcome;
+} | {
+    __kind__: "err";
+    err: string;
+};
 export interface HouseStats {
     totalWagered: Tokens;
     totalPaidOut: Tokens;
@@ -210,12 +220,12 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(activeLines: bigint): Promise<SpinOutcome>;
+    spin(activeLines: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }
-import type { AccountIdentifier as _AccountIdentifier, DepositAccountView as _DepositAccountView, Error as _Error, ReelGrid as _ReelGrid, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, Symbol as _Symbol, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { AccountIdentifier as _AccountIdentifier, DepositAccountView as _DepositAccountView, Error as _Error, ReelGrid as _ReelGrid, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, SpinResult as _SpinResult, Symbol as _Symbol, SyncDepositResult as _SyncDepositResult, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async __accessControlState(): Promise<any> {
@@ -526,46 +536,46 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async spin(arg0: bigint): Promise<SpinOutcome> {
+    async spin(arg0: bigint): Promise<SpinResult> {
         if (this.processError) {
             try {
                 const result = await this.actor.spin(arg0);
-                return from_candid_SpinOutcome_n27(this._uploadFile, this._downloadFile, result);
+                return from_candid_SpinResult_n27(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.spin(arg0);
-            return from_candid_SpinOutcome_n27(this._uploadFile, this._downloadFile, result);
+            return from_candid_SpinResult_n27(this._uploadFile, this._downloadFile, result);
         }
     }
     async syncDeposit(): Promise<SyncDepositResult> {
         if (this.processError) {
             try {
                 const result = await this.actor.syncDeposit();
-                return result;
+                return from_candid_SyncDepositResult_n31(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.syncDeposit();
-            return result;
+            return from_candid_SyncDepositResult_n31(this._uploadFile, this._downloadFile, result);
         }
     }
     async syncHouseDeposit(): Promise<SyncDepositResult> {
         if (this.processError) {
             try {
                 const result = await this.actor.syncHouseDeposit();
-                return result;
+                return from_candid_SyncDepositResult_n31(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.syncHouseDeposit();
-            return result;
+            return from_candid_SyncDepositResult_n31(this._uploadFile, this._downloadFile, result);
         }
     }
     async transfer(arg0: AccountIdentifier, arg1: Tokens): Promise<TransferResult> {
@@ -595,14 +605,20 @@ function from_candid_ReelGrid_n17(_uploadFile: (file: ExternalBlob) => Promise<U
 function from_candid_Result_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Result): Result {
     return from_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function from_candid_SpinOutcome_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinOutcome): SpinOutcome {
-    return from_candid_record_n28(_uploadFile, _downloadFile, value);
+function from_candid_SpinOutcome_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinOutcome): SpinOutcome {
+    return from_candid_record_n30(_uploadFile, _downloadFile, value);
 }
 function from_candid_SpinRecord_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinRecord): SpinRecord {
     return from_candid_record_n16(_uploadFile, _downloadFile, value);
 }
+function from_candid_SpinResult_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SpinResult): SpinResult {
+    return from_candid_variant_n28(_uploadFile, _downloadFile, value);
+}
 function from_candid_Symbol_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Symbol): Symbol {
     return from_candid_variant_n21(_uploadFile, _downloadFile, value);
+}
+function from_candid_SyncDepositResult_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SyncDepositResult): SyncDepositResult {
+    return from_candid_record_n32(_uploadFile, _downloadFile, value);
 }
 function from_candid_Transaction_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Transaction): Transaction {
     return from_candid_record_n24(_uploadFile, _downloadFile, value);
@@ -617,6 +633,9 @@ function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Ui
     return from_candid_variant_n10(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AccountIdentifier]): AccountIdentifier | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -685,7 +704,7 @@ function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uin
         amount: value.amount
     };
 }
-function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     won: boolean;
     winningLines: Array<bigint>;
     wager: _Tokens;
@@ -707,6 +726,27 @@ function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uin
         activeLines: value.activeLines,
         reels: from_candid_ReelGrid_n17(_uploadFile, _downloadFile, value.reels),
         payout: value.payout
+    };
+}
+function from_candid_record_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    warning: [] | [string];
+    balance: _Tokens;
+    ledgerDefault: _Tokens;
+    ledgerHouse: _Tokens;
+    credited: _Tokens;
+}): {
+    warning?: string;
+    balance: Tokens;
+    ledgerDefault: Tokens;
+    ledgerHouse: Tokens;
+    credited: Tokens;
+} {
+    return {
+        warning: record_opt_to_undefined(from_candid_opt_n33(_uploadFile, _downloadFile, value.warning)),
+        balance: value.balance,
+        ledgerDefault: value.ledgerDefault,
+        ledgerHouse: value.ledgerHouse,
+        credited: value.credited
     };
 }
 function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -768,6 +808,25 @@ function from_candid_variant_n26(_uploadFile: (file: ExternalBlob) => Promise<Ui
     adminTransferOut: null;
 }): TxKind {
     return "win" in value ? TxKind.win : "spinCost" in value ? TxKind.spinCost : "transferOut" in value ? TxKind.transferOut : "transferIn" in value ? TxKind.transferIn : "adminTransferOut" in value ? TxKind.adminTransferOut : value;
+}
+function from_candid_variant_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: _SpinOutcome;
+} | {
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: SpinOutcome;
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: from_candid_SpinOutcome_n29(_uploadFile, _downloadFile, value.ok)
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
 }
 function from_candid_variant_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     FrontendOriginsNotConfigured: null;
@@ -880,6 +939,8 @@ function from_candid_variant_n4(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }
 function from_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     ok: {
+        fee: _Tokens;
+        blockIndex: bigint;
         amount: _Tokens;
     };
 } | {
@@ -887,6 +948,8 @@ function from_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): {
     __kind__: "ok";
     ok: {
+        fee: Tokens;
+        blockIndex: bigint;
         amount: Tokens;
     };
 } | {

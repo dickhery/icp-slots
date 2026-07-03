@@ -135,7 +135,10 @@ export const mockBackend: backendInterface = {
     return new Uint8Array();
   },
   async adminTransfer() {
-    return { __kind__: "ok" as const, ok: { amount: 1_000_000n } };
+    return {
+      __kind__: "ok" as const,
+      ok: { amount: 1_000_000n, fee: 10_000n, blockIndex: 1n },
+    };
   },
   async assignCallerUserRole() {
     return undefined;
@@ -169,9 +172,7 @@ export const mockBackend: backendInterface = {
   async getHouseDepositAccount() {
     const accountId = new Uint8Array(32);
     accountId[0] = 0xcd;
-    const legacyAccountId = new Uint8Array(32);
-    legacyAccountId[0] = 0xef;
-    return { accountId, legacyAccountId, canisterId: SAMPLE_PRINCIPAL };
+    return { accountId, canisterId: SAMPLE_PRINCIPAL };
   },
   async syncHouseDeposit() {
     houseBalance += 10_000_000n;
@@ -218,15 +219,21 @@ export const mockBackend: backendInterface = {
       payout,
     });
     return {
-      won,
-      reels,
-      activeLines,
-      wager,
-      payout,
-      winningLines: won ? [0n] : [],
+      __kind__: "ok" as const,
+      ok: {
+        won,
+        reels,
+        activeLines,
+        wager,
+        payout,
+        winningLines: won ? [0n] : [],
+      },
     };
   },
   async transfer() {
-    return { __kind__: "ok" as const, ok: { amount: 1_000_000n } };
+    return {
+      __kind__: "ok" as const,
+      ok: { amount: 1_000_000n, fee: 10_000n, blockIndex: 2n },
+    };
   },
 };

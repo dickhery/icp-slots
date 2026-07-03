@@ -33,7 +33,11 @@ export const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : Error });
 export const AccountIdentifier = IDL.Vec(IDL.Nat8);
 export const Tokens = IDL.Nat;
 export const TransferResult = IDL.Variant({
-  'ok' : IDL.Record({ 'amount' : Tokens }),
+  'ok' : IDL.Record({
+    'fee' : Tokens,
+    'blockIndex' : IDL.Nat,
+    'amount' : Tokens,
+  }),
   'err' : IDL.Text,
 });
 export const UserRole = IDL.Variant({
@@ -99,7 +103,9 @@ export const SpinOutcome = IDL.Record({
   'reels' : ReelGrid,
   'payout' : Tokens,
 });
+export const SpinResult = IDL.Variant({ 'ok' : SpinOutcome, 'err' : IDL.Text });
 export const SyncDepositResult = IDL.Record({
+  'warning' : IDL.Opt(IDL.Text),
   'balance' : Tokens,
   'ledgerDefault' : Tokens,
   'ledgerHouse' : Tokens,
@@ -129,7 +135,7 @@ export const idlService = IDL.Service({
   'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
   'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
+  'spin' : IDL.Func([IDL.Nat], [SpinResult], []),
   'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
   'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
   'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
@@ -163,7 +169,11 @@ export const idlFactory = ({ IDL }) => {
   const AccountIdentifier = IDL.Vec(IDL.Nat8);
   const Tokens = IDL.Nat;
   const TransferResult = IDL.Variant({
-    'ok' : IDL.Record({ 'amount' : Tokens }),
+    'ok' : IDL.Record({
+      'fee' : Tokens,
+      'blockIndex' : IDL.Nat,
+      'amount' : Tokens,
+    }),
     'err' : IDL.Text,
   });
   const UserRole = IDL.Variant({
@@ -229,7 +239,9 @@ export const idlFactory = ({ IDL }) => {
     'reels' : ReelGrid,
     'payout' : Tokens,
   });
+  const SpinResult = IDL.Variant({ 'ok' : SpinOutcome, 'err' : IDL.Text });
   const SyncDepositResult = IDL.Record({
+    'warning' : IDL.Opt(IDL.Text),
     'balance' : Tokens,
     'ledgerDefault' : Tokens,
     'ledgerHouse' : Tokens,
@@ -263,7 +275,7 @@ export const idlFactory = ({ IDL }) => {
     'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
     'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
+    'spin' : IDL.Func([IDL.Nat], [SpinResult], []),
     'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
     'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
     'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
