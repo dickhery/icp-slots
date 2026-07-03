@@ -168,8 +168,12 @@ export const mockBackend: backendInterface = {
   },
   async getHouseDepositAccount() {
     const accountId = new Uint8Array(32);
-    accountId.fill(0xcd);
+    accountId[0] = 0xcd;
     return { accountId, canisterId: SAMPLE_PRINCIPAL };
+  },
+  async syncHouseDeposit() {
+    houseBalance += 10_000_000n;
+    return { credited: 10_000_000n, balance: houseBalance };
   },
   async syncDeposit() {
     balance += 5_000_000n;

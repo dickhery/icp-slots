@@ -9,18 +9,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHouseDepositAccount } from "@/hooks/use-backend";
-import { accountIdToHex } from "@/types";
-import { Building2, Check, Copy, Landmark } from "lucide-react";
+import {
+  useHouseDepositAccount,
+  useSyncHouseDeposit,
+} from "@/hooks/use-backend";
+import { accountIdToHex, formatIcp } from "@/types";
+import { Building2, Check, Copy, Landmark, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 /**
- * Admin card showing the backend canister's default ICP deposit address
- * for funding the vault (cycles and house liquidity).
+ * Admin card showing the house vault deposit address and a sync control
+ * that credits ICP from the ledger into the playable house balance.
  */
 export function HouseDepositCard() {
   const { data, isLoading, isError } = useHouseDepositAccount();
+  const syncHouseDeposit = useSyncHouseDeposit();
   const [copied, setCopied] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const hex = data ? accountIdToHex(data.accountId) : "";
   const canisterText = data?.canisterId.toString() ?? "";
@@ -31,6 +36,27 @@ export function HouseDepositCard() {
     setCopied(true);
     toast.success("House account ID copied");
     window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncHouseDeposit();
+      if (result.credited > 0n) {
+        toast.success("House funded", {
+          description: `+${formatIcp(result.credited)} ICP added to house balance.`,
+        });
+      } else {
+        toast.message("No new deposits", {
+          description:
+            "Send ICP to the house account ID below, then sync again.",
+        });
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
   };
 
   return (
@@ -45,10 +71,10 @@ export function HouseDepositCard() {
           </span>
           <div>
             <CardTitle className="font-display text-base font-600 tracking-tight">
-              Fund Backend Account
+              Fund House Balance
             </CardTitle>
             <CardDescription className="text-xs">
-              Send ICP to the canister&apos;s default ledger account
+              Send ICP to the house vault account, then sync
             </CardDescription>
           </div>
         </div>
@@ -56,7 +82,7 @@ export function HouseDepositCard() {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            Backend account identifier
+            House account identifier
           </p>
           {isLoading ? (
             <Skeleton className="h-10 w-full" />
@@ -106,10 +132,24 @@ export function HouseDepositCard() {
         )}
 
         <p className="text-[11px] leading-relaxed text-muted-foreground">
-          Use this address to top up the backend with ICP for cycle payments and
-          house liquidity. This is the canister&apos;s main ledger account (no
-          subaccount).
+          This address is dedicated to the house pool (separate from player
+          deposits). If you funded the canister before this update, tap sync —
+          it will also pick up ICP on the previous default account.
         </p>
+
+        <Button
+          type="button"
+          onClick={handleSync}
+          disabled={syncing || isLoading}
+          data-ocid="admin.house_deposit.sync_button"
+          className="w-full font-display uppercase tracking-wider"
+        >
+          <RefreshCw
+            className={syncing ? "size-4 animate-spin" : "size-4"}
+            aria-hidden="true"
+          />
+          Sync house deposits
+        </Button>
       </CardContent>
     </Card>
   );

@@ -89,7 +89,20 @@ export function useDepositAccount() {
   });
 }
 
-/** Admin: the canister's default ICP deposit account. */
+/** Admin: sync ledger deposits into the house balance. */
+export function useSyncHouseDeposit() {
+  const { actor } = useBackend();
+  const queryClient = useQueryClient();
+  return useCallback(async (): Promise<SyncDepositResult> => {
+    if (!actor) throw new Error("Actor not ready");
+    const result = await actor.syncHouseDeposit();
+    await queryClient.invalidateQueries({ queryKey: ["houseBalance"] });
+    await queryClient.invalidateQueries({ queryKey: ["houseStats"] });
+    return result;
+  }, [actor, queryClient]);
+}
+
+/** Admin: the house vault ICP deposit account. */
 export function useHouseDepositAccount() {
   const { actor, isFetching } = useBackend();
   return useQuery<DepositAccountView>({

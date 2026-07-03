@@ -128,6 +128,7 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
   'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
+  'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
   'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
 });
 
@@ -258,6 +259,7 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'spin' : IDL.Func([IDL.Nat], [SpinOutcome], []),
     'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
+    'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
     'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
   });
 };

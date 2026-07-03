@@ -17,7 +17,10 @@ actor Backend {
   let players : Map.Map<Common.UserId, SlotGame.Player>;
   let spinHistory : Map.Map<Common.UserId, List.List<SlotGame.SpinRecord>>;
   let transactions : Map.Map<Common.UserId, List.List<SlotGame.Transaction>>;
-  let houseBalance : { var balance : Common.Tokens };
+  let houseBalance : {
+    var balance : Common.Tokens;
+    var creditedLedgerBalance : Common.Tokens;
+  };
   let aggregateStats : {
     var totalSpins : Nat;
     var totalWagered : Common.Tokens;

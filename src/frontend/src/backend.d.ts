@@ -153,5 +153,6 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     spin(activeLines: bigint): Promise<SpinOutcome>;
     syncDeposit(): Promise<SyncDepositResult>;
+    syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }

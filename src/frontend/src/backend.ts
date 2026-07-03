@@ -209,6 +209,7 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     spin(activeLines: bigint): Promise<SpinOutcome>;
     syncDeposit(): Promise<SyncDepositResult>;
+    syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
 }
 import type { AccountIdentifier as _AccountIdentifier, Error as _Error, ReelGrid as _ReelGrid, Result as _Result, SpinOutcome as _SpinOutcome, SpinRecord as _SpinRecord, Symbol as _Symbol, Timestamp as _Timestamp, Tokens as _Tokens, Transaction as _Transaction, TransferResult as _TransferResult, TxKind as _TxKind, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
@@ -547,6 +548,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.syncDeposit();
+            return result;
+        }
+    }
+    async syncHouseDeposit(): Promise<SyncDepositResult> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.syncHouseDeposit();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.syncHouseDeposit();
             return result;
         }
     }

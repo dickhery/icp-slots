@@ -41,7 +41,7 @@ export function HouseBalanceCard() {
                 House Balance
               </CardTitle>
               <CardDescription className="text-xs">
-                Current ICP held by the vault canister
+                Playable house pool (fund via deposit card, then sync)
               </CardDescription>
             </div>
           </div>

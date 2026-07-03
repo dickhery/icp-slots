@@ -17,7 +17,10 @@ mixin (
   players : Map.Map<Common.UserId, SlotGame.Player>,
   spinHistory : Map.Map<Common.UserId, List.List<SlotGame.SpinRecord>>,
   transactions : Map.Map<Common.UserId, List.List<SlotGame.Transaction>>,
-  houseBalance : { var balance : Common.Tokens },
+  houseBalance : {
+    var balance : Common.Tokens;
+    var creditedLedgerBalance : Common.Tokens;
+  },
   aggregateStats : {
     var totalSpins : Nat;
     var totalWagered : Common.Tokens;
@@ -36,6 +39,19 @@ mixin (
 
   func canisterPrincipal() : Principal {
     Principal.fromActor(selfActor);
+  };
+
+  // Sum ICP on the house subaccount plus the legacy default canister account.
+  func ledgerHouseFundingTotal() : async Common.Tokens {
+    let onHouse = await icpLedger.icrc1_balance_of({
+      owner = canisterPrincipal();
+      subaccount = ?Accounts.houseSubAccount;
+    });
+    let onDefault = await icpLedger.icrc1_balance_of({
+      owner = canisterPrincipal();
+      subaccount = null;
+    });
+    onHouse + onDefault;
   };
 
   // Require the caller to be a registered player; trap otherwise.
@@ -305,15 +321,31 @@ mixin (
 
   // ---- Admin ----
 
-  // Returns the canister's default ICP deposit account (admin only).
+  // Returns the house vault ICP deposit account (admin only).
   public query ({ caller }) func getHouseDepositAccount() : async SlotGame.DepositAccountView {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: admin only");
     };
     ({
-      accountId = Accounts.defaultAccountIdentifier(canisterPrincipal());
+      accountId = Accounts.houseAccountIdentifier(canisterPrincipal());
       canisterId = canisterPrincipal();
     });
+  };
+
+  // Credits new ICP sent to the house deposit account into the house balance.
+  // Also picks up funds on the legacy default canister account from earlier UI.
+  public shared ({ caller }) func syncHouseDeposit() : async SlotGame.SyncDepositResult {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: admin only");
+    };
+    let ledgerTotal = await ledgerHouseFundingTotal();
+    var credited = 0 : Common.Tokens;
+    if (ledgerTotal > houseBalance.creditedLedgerBalance) {
+      credited := ledgerTotal - houseBalance.creditedLedgerBalance;
+      houseBalance.balance += credited;
+      houseBalance.creditedLedgerBalance := ledgerTotal;
+    };
+    { credited; balance = houseBalance.balance };
   };
 
   // Returns the current house backend ICP balance (admin only).

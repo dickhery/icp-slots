@@ -113,6 +113,7 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'spin' : ActorMethod<[bigint], SpinOutcome>,
   'syncDeposit' : ActorMethod<[], SyncDepositResult>,
+  'syncHouseDeposit' : ActorMethod<[], SyncDepositResult>,
   'transfer' : ActorMethod<[AccountIdentifier, Tokens], TransferResult>,
 }
 export declare const idlService: IDL.ServiceClass;

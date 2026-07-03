@@ -41,6 +41,8 @@ type NewActor__310080401 =
     var transactions :
       Map__166311111<Principal, List__653618698<Transaction__236262560>>
   };
+type NewHouseBalance__866847553 =
+  {var balance : Nat; var creditedLedgerBalance : Nat};
 type NewPlayer__513285823 =
   {
     var balance : Nat;
@@ -51,6 +53,7 @@ type NewPlayer__513285823 =
 type Node__305750417<K, V> =
   {#internal : Internal__572103086<K, V>; #leaf : Leaf__868027<K, V>};
 type OldActor__856589358 = {};
+type OldHouseBalance__1003053323 = {var balance : Nat};
 type OldPlayer__388683541 =
   {var balance : Nat; id : Principal; subAccount : Blob};
 type OldSpinRecord__312717468 =
@@ -149,7 +152,10 @@ type UserRole__364273487 = {#admin; #guest; #user};
       };
   "20260703_180000_DepositAccounts" :
     (old : {players : Map__166311111<Principal, OldPlayer__388683541>}) ->
-      {players : Map__166311111<Principal, NewPlayer__513285823>}
+      {players : Map__166311111<Principal, NewPlayer__513285823>};
+  "20260703_200000_HouseLedgerSync" :
+    (old : {houseBalance : OldHouseBalance__1003053323}) ->
+      {houseBalance : NewHouseBalance__866847553}
 }
 actor  {
   stable accessControlState :
@@ -165,7 +171,11 @@ actor  {
       var totalWagered : Tokens__151796392
     };
   stable counters : {var nextSpinId : Nat; var nextTxId : Nat};
-  stable houseBalance : {var balance : Tokens__151796392};
+  stable houseBalance :
+    {
+      var balance : Tokens__151796392;
+      var creditedLedgerBalance : Tokens__151796392
+    };
   stable players :
     {
       var root : Node__305750417<UserId__653285603, Player__256311133>;
