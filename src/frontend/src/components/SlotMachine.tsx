@@ -56,9 +56,11 @@ export function SlotMachine() {
   const reelGridRef = useRef<HTMLDivElement>(null);
 
   const reelDurationMs = 900;
-  const reelStaggerMs = 180;
+  const reelStaggerMs = 140;
+  const reelDelayMs = 75;
   const reelCount = 5;
-  const spinSettleMs = reelDurationMs + (reelCount - 1) * reelStaggerMs + 250;
+  const spinSettleMs =
+    reelDurationMs + (reelCount - 1) * (reelStaggerMs + reelDelayMs) + 140;
 
   const wager = computeWager(activeLines, betMultiplier);
   const totalDebit = wager + ICP_LEDGER_FEE_E8S;
@@ -130,12 +132,14 @@ export function SlotMachine() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-3 shadow-cabinet backdrop-blur-sm transition-smooth sm:p-5 md:p-8",
-        busy && "border-accent/60 shadow-gold",
+        "neon-panel relative overflow-hidden rounded-2xl border border-border/60 bg-card/65 p-3 shadow-cabinet backdrop-blur-sm transition-smooth sm:p-5 md:p-8",
+        busy && "border-accent/70 shadow-gold",
       )}
       data-ocid="slot.cabinet"
     >
       <WinCelebration payout={payout} trigger={winTrigger} />
+      <div className="pointer-events-none absolute -left-20 top-1/3 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 bottom-0 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
 
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
@@ -193,10 +197,14 @@ export function SlotMachine() {
       </div>
 
       <div
-        className="relative overflow-hidden rounded-xl border border-border/70 bg-background/60 p-1.5 vault-grain sm:p-3"
+        className="neon-reel-frame relative overflow-hidden rounded-xl border border-border/70 bg-background/70 p-1.5 vault-grain sm:p-3"
         data-ocid="slot.reel_window"
       >
-        <div ref={reelGridRef} className="relative mx-auto w-full max-w-full">
+        <div
+          ref={reelGridRef}
+          className="relative mx-auto w-full max-w-full"
+          aria-busy={busy}
+        >
           <Payline
             containerRef={reelGridRef}
             spinPhase={spinPhase}
@@ -212,28 +220,25 @@ export function SlotMachine() {
                 targets={
                   display[i] as [SlotSymbolType, SlotSymbolType, SlotSymbolType]
                 }
-                spinning={spinning}
+                phase={spinPhase}
                 durationMs={reelDurationMs}
+                staggerMs={reelStaggerMs}
+                delayMs={reelDelayMs}
               />
             ))}
           </div>
         </div>
         {paying ? (
           <div
-            className="absolute inset-0 z-20 grid place-items-center overflow-hidden rounded-xl bg-background/90 sm:bg-background/80 sm:backdrop-blur-sm"
+            className="pointer-events-none absolute inset-x-0 bottom-3 z-30 flex justify-center px-3"
             data-ocid="slot.payment_pending"
             aria-live="polite"
           >
-            <div className="absolute inset-y-0 w-1/2 animate-payment-scan bg-gradient-to-r from-transparent via-accent/10 to-transparent" />
-            <div className="relative animate-payment-ready rounded-2xl border border-accent/50 bg-card/90 px-7 py-5 text-center shadow-gold">
-              <span className="mx-auto mb-3 grid size-11 place-items-center rounded-full border border-accent/40 bg-accent/10 text-accent">
-                <LoaderCircle className="size-5 animate-spin" />
-              </span>
-              <p className="font-display text-base font-bold uppercase tracking-[0.18em] text-accent">
-                Starting your spin
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Securing {formatIcp(totalDebit)} ICP total (wager + fee)
+            <div className="relative flex animate-payment-ready items-center gap-2 overflow-hidden rounded-full border border-accent/50 bg-card/95 px-4 py-2 shadow-gold backdrop-blur-md">
+              <div className="absolute inset-y-0 w-1/2 animate-payment-scan bg-gradient-to-r from-transparent via-accent/15 to-transparent" />
+              <LoaderCircle className="relative size-4 animate-spin text-accent" />
+              <p className="relative font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-accent sm:text-xs">
+                Securing {formatIcp(totalDebit)} ICP · reels live
               </p>
             </div>
           </div>
@@ -283,7 +288,7 @@ export function SlotMachine() {
           data-ocid="slot.spin_button"
           className={cn(
             "h-14 min-w-56 rounded-full px-10 font-display text-lg font-bold uppercase tracking-wider",
-            "bg-primary text-primary-foreground shadow-primary transition-smooth",
+            "neon-spin-button bg-primary text-primary-foreground shadow-primary transition-smooth",
             "hover:scale-[1.02] hover:shadow-gold-lg disabled:hover:scale-100 disabled:hover:shadow-primary",
             !busy && canSpin && "animate-pulse-glow",
           )}

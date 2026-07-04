@@ -46,7 +46,9 @@ export function useBalance() {
       return actor.getBalance();
     },
     enabled: !!actor && !isFetching,
-    refetchInterval: 15000,
+    staleTime: 10000,
+    refetchInterval: 30000,
+    refetchIntervalInBackground: false,
   });
 }
 

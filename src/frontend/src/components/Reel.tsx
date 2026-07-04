@@ -1,195 +1,153 @@
-import { useEffect, useRef, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import type { SlotSymbol } from "@/types";
 import { SYMBOL_META } from "@/types";
 
-/** Ordered list of all symbols used to build the spinning strip. */
+/** Ordered list of symbols used to build continuous, device-independent strips. */
 const ALL_SYMBOLS = Object.keys(SYMBOL_META) as SlotSymbol[];
-
 const ROW_KEYS = ["top", "middle", "bottom"] as const;
-const ROW_COUNT = 3;
+const CRUISE_CYCLES = 4;
+const LANDING_CYCLES = 4;
 
-const DESKTOP_STRIP_LENGTH = 24;
-const MOBILE_STRIP_LENGTH = 16;
+const CRUISE_STRIP = Array.from(
+  { length: ALL_SYMBOLS.length * CRUISE_CYCLES },
+  (_, index) => ALL_SYMBOLS[index % ALL_SYMBOLS.length],
+);
+
+export type ReelPhase = "idle" | "paying" | "spinning";
 
 interface ReelProps {
   /** Final symbols to land on: [top, middle, bottom]. */
   targets: [SlotSymbol, SlotSymbol, SlotSymbol];
-  spinning: boolean;
+  phase: ReelPhase;
   index: number;
   durationMs?: number;
+  staggerMs?: number;
+  delayMs?: number;
 }
 
-function buildStrip(
+type ReelStyle = CSSProperties & Record<`--${string}`, string | number>;
+
+function makeStripStyle(count: number): ReelStyle {
+  return { "--reel-strip-count": count };
+}
+
+function buildLandingStrip(
   targets: [SlotSymbol, SlotSymbol, SlotSymbol],
-  stripLength: number,
+  reelIndex: number,
 ): SlotSymbol[] {
-  const strip: SlotSymbol[] = [];
-  for (let i = 0; i < stripLength - 3; i++) {
-    strip.push(ALL_SYMBOLS[i % ALL_SYMBOLS.length]);
-  }
-  strip.push(...targets);
-  return strip;
+  const filler = Array.from(
+    { length: ALL_SYMBOLS.length * LANDING_CYCLES },
+    (_, index) => ALL_SYMBOLS[(index + reelIndex * 2) % ALL_SYMBOLS.length],
+  );
+  return [...filler, ...targets];
 }
 
-/** A single vertical reel showing three rows with a spinning animation. */
+/** A GPU-composited reel whose travel is relative to its own strip geometry. */
 export function Reel({
   targets,
-  spinning,
+  phase,
   index,
   durationMs = 900,
+  staggerMs = 140,
+  delayMs = 75,
 }: ReelProps) {
-  const isMobile = useIsMobile();
-  const stripLength = isMobile ? MOBILE_STRIP_LENGTH : DESKTOP_STRIP_LENGTH;
-  const landStaggerMs = isMobile ? 140 : 180;
-
-  const [strip, setStrip] = useState<SlotSymbol[]>(() =>
-    buildStrip(targets, stripLength),
-  );
-  const [phase, setPhase] = useState<"rest" | "spin" | "land">("rest");
-  const [restOffset, setRestOffset] = useState(0);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const cellRef = useRef<HTMLDivElement | null>(null);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: animate once when spinning flips true; targets are already set
-  useEffect(() => {
-    if (!spinning) {
-      setPhase("rest");
-      return;
-    }
-
-    setStrip(buildStrip(targets, stripLength));
-    setPhase("spin");
-    const landDelay = durationMs + index * landStaggerMs;
-    const landTimer = window.setTimeout(() => setPhase("land"), landDelay);
-    return () => window.clearTimeout(landTimer);
-  }, [spinning, durationMs, index, landStaggerMs, stripLength]);
-
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    const cell = cellRef.current;
-    if (!viewport || !cell) return;
-
-    const updateOffset = () => {
-      const viewportHeight = viewport.getBoundingClientRect().height;
-      if (viewportHeight <= 0) return;
-      const cellHeight = viewportHeight / ROW_COUNT;
-      viewport.style.setProperty("--reel-cell-h", `${cellHeight}px`);
-      setRestOffset((strip.length - 3) * cellHeight);
-    };
-
-    updateOffset();
-    const observer = new ResizeObserver(updateOffset);
-    observer.observe(viewport);
-    return () => observer.disconnect();
-  }, [strip.length]);
-
-  const cellClass =
-    "reel-cell grid min-h-0 w-full shrink-0 place-items-center [height:var(--reel-cell-h)]";
-
   const reelShellClass =
-    "relative aspect-[19/60] w-full min-w-0 max-h-[15rem] overflow-hidden rounded-lg reel-edge ring-1 ring-border/60 sm:max-h-[17.5rem] sm:aspect-[24/70]";
-
+    "reel-edge reel-window-glass relative aspect-[19/60] w-full min-w-0 max-h-[15rem] overflow-hidden rounded-lg ring-1 ring-border/70 sm:max-h-[17.5rem] sm:aspect-[24/70]";
   const symbolSizeClass = "text-[clamp(1.15rem,5.2vw,2.5rem)]";
   const textSymbolSizeClass = "text-[clamp(0.6rem,2.8vw,1.15rem)]";
 
-  if (!spinning) {
-    return (
+  const renderCell = (symbol: SlotSymbol, key: string, moving = false) => (
+    <div key={key} className="reel-cell grid min-h-0 w-full place-items-center">
+      <SymbolCell
+        symbol={symbol}
+        sizeClass={symbolSizeClass}
+        textSizeClass={textSymbolSizeClass}
+        moving={moving}
+      />
+    </div>
+  );
+
+  let content: ReactNode;
+  if (phase === "idle") {
+    content = (
+      <div className="grid h-full grid-rows-3">
+        {targets.map((symbol, row) =>
+          renderCell(symbol, `rest-${ROW_KEYS[row]}-${symbol}`),
+        )}
+      </div>
+    );
+  } else if (phase === "paying") {
+    const count = CRUISE_STRIP.length;
+    const cycle = ALL_SYMBOLS.length;
+    content = (
       <div
-        ref={viewportRef}
-        data-reel-col={index}
-        className={reelShellClass}
-        aria-label={`Reel ${index + 1}`}
+        className="reel-strip animate-reel-cruise will-change-transform"
+        style={
+          {
+            ...makeStripStyle(count),
+            "--reel-cruise-from": `${-(cycle / count) * 100}%`,
+            "--reel-cruise-to": `${-((cycle * 2) / count) * 100}%`,
+            "--reel-cruise-duration": `${245 + index * 13}ms`,
+          } as ReelStyle
+        }
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background/80 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background/80 to-transparent" />
-        <div className="flex h-full flex-col">
-          {targets.map((sym, i) => {
-            const meta = SYMBOL_META[sym];
-            return (
-              <div
-                key={`rest-${ROW_KEYS[i]}-${sym}`}
-                ref={i === 0 ? cellRef : undefined}
-                className={cellClass}
-              >
-                <SymbolCell
-                  symbol={sym}
-                  meta={meta}
-                  sizeClass={symbolSizeClass}
-                  textSizeClass={textSymbolSizeClass}
-                />
-              </div>
-            );
-          })}
-        </div>
+        {CRUISE_STRIP.map((symbol, cell) =>
+          renderCell(symbol, `cruise-${index}-${cell}`, true),
+        )}
+      </div>
+    );
+  } else {
+    const strip = buildLandingStrip(targets, index);
+    const stopPercent = -((strip.length - 3) / strip.length) * 100;
+    content = (
+      <div
+        className="reel-strip animate-reel-land will-change-transform"
+        style={
+          {
+            ...makeStripStyle(strip.length),
+            "--reel-land-stop": `${stopPercent}%`,
+            "--reel-land-duration": `${durationMs + index * staggerMs}ms`,
+            "--reel-land-delay": `${index * delayMs}ms`,
+          } as ReelStyle
+        }
+      >
+        {strip.map((symbol, cell) =>
+          renderCell(symbol, `land-${index}-${cell}`, true),
+        )}
       </div>
     );
   }
 
   return (
     <div
-      ref={viewportRef}
       data-reel-col={index}
+      data-reel-phase={phase}
       className={reelShellClass}
       aria-label={`Reel ${index + 1}`}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 bg-gradient-to-b from-background/80 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 bg-gradient-to-t from-background/80 to-transparent" />
-
-      <div
-        className={cn(
-          "reel-strip flex flex-col will-change-transform",
-          phase === "spin" &&
-            (isMobile ? "animate-reel-spin-mobile" : "animate-reel-spin"),
-        )}
-        style={
-          phase === "land"
-            ? {
-                transform: `translate3d(0, -${restOffset}px, 0)`,
-                transition: `transform ${durationMs + index * landStaggerMs}ms cubic-bezier(0.16, 1, 0.3, 1)`,
-              }
-            : undefined
-        }
-      >
-        {strip.map((sym, i) => {
-          const meta = SYMBOL_META[sym];
-          const isFinal = i >= strip.length - 3;
-          return (
-            <div
-              key={`spin-${sym}-${strip.length - i}`}
-              ref={i === 0 ? cellRef : undefined}
-              className={cn(
-                cellClass,
-                isFinal && phase === "land" && "animate-win-flash",
-              )}
-            >
-              <SymbolCell
-                symbol={sym}
-                meta={meta}
-                sizeClass={symbolSizeClass}
-                textSizeClass={textSymbolSizeClass}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-10 bg-gradient-to-b from-background/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-gradient-to-t from-background/90 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 top-1/3 z-20 h-px bg-accent/15 shadow-[0_0_8px_oklch(0.82_0.16_80/0.3)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-2/3 z-20 h-px bg-primary/20 shadow-[0_0_8px_oklch(0.72_0.24_15/0.3)]" />
+      {content}
     </div>
   );
 }
 
 function SymbolCell({
   symbol,
-  meta,
   sizeClass,
   textSizeClass,
+  moving,
 }: {
   symbol: SlotSymbol;
-  meta: { glyph: string; label: string; accent: string };
   sizeClass: string;
   textSizeClass: string;
+  moving: boolean;
 }) {
+  const meta = SYMBOL_META[symbol];
   const accentText =
     meta.accent === "accent"
       ? "text-accent"
@@ -198,16 +156,16 @@ function SymbolCell({
         : meta.accent === "warning"
           ? "text-warning"
           : "text-primary";
-
   const isText =
     symbol === "seven" || symbol === "bar" || symbol === "horseshoe";
 
   return (
     <span
       className={cn(
-        "font-display font-bold leading-none",
+        "symbol-glow font-display font-bold leading-none",
         isText ? textSizeClass : sizeClass,
         accentText,
+        moving && "reel-symbol-moving",
       )}
       aria-label={meta.label}
       role="img"

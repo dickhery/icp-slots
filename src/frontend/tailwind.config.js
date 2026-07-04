@@ -105,13 +105,15 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "reel-spin": {
-          "0%": { transform: "translate3d(0, 0, 0)" },
-          "100%": { transform: "translate3d(0, -100%, 0)" },
+        "reel-cruise": {
+          from: { transform: "translate3d(0, var(--reel-cruise-from), 0)" },
+          to: { transform: "translate3d(0, var(--reel-cruise-to), 0)" },
         },
-        "reel-spin-mobile": {
+        "reel-land": {
           "0%": { transform: "translate3d(0, 0, 0)" },
-          "100%": { transform: "translate3d(0, -66.666%, 0)" },
+          "100%": {
+            transform: "translate3d(0, var(--reel-land-stop), 0)",
+          },
         },
         "win-flash": {
           "0%, 100%": {
@@ -160,12 +162,22 @@ export default {
             filter: "drop-shadow(0 0 8px oklch(0.82 0.16 80 / 0.85))",
           },
         },
+        "neon-drift": {
+          "0%, 100%": { transform: "translate3d(0, 0, 0) scale(1)" },
+          "50%": { transform: "translate3d(1.5rem, -1rem, 0) scale(1.08)" },
+        },
+        "landing-float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-7px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "reel-spin": "reel-spin 0.14s linear infinite",
-        "reel-spin-mobile": "reel-spin-mobile 0.2s linear infinite",
+        "reel-cruise":
+          "reel-cruise var(--reel-cruise-duration, 260ms) linear infinite",
+        "reel-land":
+          "reel-land var(--reel-land-duration, 900ms) var(--reel-land-delay, 0ms) cubic-bezier(0.12, 0.72, 0.16, 1) both",
         "win-flash": "win-flash 0.9s ease-in-out 2",
         "coin-drop": "coin-drop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both",
         "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",
@@ -174,6 +186,8 @@ export default {
         "jackpot-burst": "jackpot-burst 0.6s ease-in-out 3",
         "payline-preview": "payline-preview 1.4s ease-in-out infinite",
         "payline-win": "payline-win 0.75s ease-in-out infinite",
+        "neon-drift": "neon-drift 9s ease-in-out infinite",
+        "landing-float": "landing-float 3s ease-in-out infinite",
       },
     },
   },
