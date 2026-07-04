@@ -21,6 +21,7 @@ module {
   public type SpinOutcome = {
     reels : ReelGrid;
     activeLines : Nat;
+    betMultiplier : Nat;
     wager : Common.Tokens;
     won : Bool;
     payout : Common.Tokens;
@@ -33,6 +34,7 @@ module {
     timestamp : Common.Timestamp;
     reels : ReelGrid;
     activeLines : Nat;
+    betMultiplier : Nat;
     wager : Common.Tokens;
     payout : Common.Tokens;
     won : Bool;

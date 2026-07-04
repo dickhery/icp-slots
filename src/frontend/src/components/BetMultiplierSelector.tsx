@@ -1,53 +1,45 @@
 import { cn } from "@/lib/utils";
 import {
-  LINE_OPTIONS,
-  type LineCount,
+  BET_MULTIPLIER_OPTIONS,
+  type BetMultiplier,
+  SPIN_COST_E8S,
   computeLineBet,
-  computeWager,
   formatIcp,
 } from "@/types";
 
-interface LineSelectorProps {
-  value: LineCount;
-  betMultiplier: number;
-  onChange: (lines: LineCount) => void;
+interface BetMultiplierSelectorProps {
+  value: BetMultiplier;
+  onChange: (multiplier: BetMultiplier) => void;
   disabled?: boolean;
 }
 
-/** Lets the player choose how many paylines to bet on (1, 3, 5, or 9). */
-export function LineSelector({
+/** Lets the player scale the per-line wager from 1× to 5× (0.01–0.05 ICP). */
+export function BetMultiplierSelector({
   value,
-  betMultiplier,
   onChange,
   disabled,
-}: LineSelectorProps) {
+}: BetMultiplierSelectorProps) {
   return (
-    <div className="space-y-2" data-ocid="slot.line_selector">
+    <div className="space-y-2" data-ocid="slot.bet_multiplier">
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          Active Paylines
-          {value > 1 ? (
-            <span className="normal-case tracking-normal text-muted-foreground/80">
-              {" "}
-              · lines cycle on reels
-            </span>
-          ) : null}
+          Bet Per Line
         </p>
         <p className="font-mono text-xs text-accent">
-          {formatIcp(computeLineBet(betMultiplier))} ICP / line
+          {formatIcp(computeLineBet(value))} ICP / line
         </p>
       </div>
-      <div className="grid grid-cols-4 gap-2">
-        {LINE_OPTIONS.map((lines) => {
-          const selected = value === lines;
-          const wager = computeWager(lines, betMultiplier);
+      <div className="grid grid-cols-5 gap-2">
+        {BET_MULTIPLIER_OPTIONS.map((multiplier) => {
+          const selected = value === multiplier;
+          const lineBet = computeLineBet(multiplier);
           return (
             <button
-              key={lines}
+              key={multiplier}
               type="button"
               disabled={disabled}
-              onClick={() => onChange(lines)}
-              data-ocid={`slot.line_option.${lines}`}
+              onClick={() => onChange(multiplier)}
+              data-ocid={`slot.bet_multiplier.${multiplier}`}
               className={cn(
                 "rounded-lg border px-2 py-2.5 text-center transition-smooth",
                 "disabled:cursor-not-allowed disabled:opacity-50",
@@ -62,15 +54,19 @@ export function LineSelector({
                   selected ? "text-accent" : "text-foreground",
                 )}
               >
-                {lines}
+                {multiplier}×
               </span>
               <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground">
-                {formatIcp(wager)} ICP
+                {formatIcp(lineBet)}
               </span>
             </button>
           );
         })}
       </div>
+      <p className="text-[10px] text-muted-foreground">
+        Base line bet {formatIcp(SPIN_COST_E8S)} ICP · max{" "}
+        {formatIcp(SPIN_COST_E8S * 5n)} ICP / line
+      </p>
     </div>
   );
 }

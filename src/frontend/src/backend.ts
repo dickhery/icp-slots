@@ -62,6 +62,7 @@ export interface DepositAccountView {
 export interface SpinRecord {
     id: bigint;
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     timestamp: Timestamp;
     wager: Tokens;
@@ -143,6 +144,7 @@ export type TransferResult = {
 export type AccountIdentifier = Uint8Array;
 export interface SpinOutcome {
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     wager: Tokens;
     activeLines: bigint;
@@ -220,7 +222,7 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(activeLines: bigint): Promise<SpinResult>;
+    spin(activeLines: bigint, betMultiplier: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
@@ -536,17 +538,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async spin(arg0: bigint): Promise<SpinResult> {
+    async spin(arg0: bigint, arg1: bigint): Promise<SpinResult> {
         if (this.processError) {
             try {
-                const result = await this.actor.spin(arg0);
+                const result = await this.actor.spin(arg0, arg1);
                 return from_candid_SpinResult_n27(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.spin(arg0);
+            const result = await this.actor.spin(arg0, arg1);
             return from_candid_SpinResult_n27(this._uploadFile, this._downloadFile, result);
         }
     }
@@ -656,6 +658,7 @@ function from_candid_record_n12(_uploadFile: (file: ExternalBlob) => Promise<Uin
 function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     timestamp: _Timestamp;
     wager: _Tokens;
@@ -665,6 +668,7 @@ function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): {
     id: bigint;
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     timestamp: Timestamp;
     wager: Tokens;
@@ -675,6 +679,7 @@ function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         id: value.id,
         won: value.won,
+        betMultiplier: value.betMultiplier,
         winningLines: value.winningLines,
         timestamp: value.timestamp,
         wager: value.wager,
@@ -706,6 +711,7 @@ function from_candid_record_n24(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }
 function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     wager: _Tokens;
     activeLines: bigint;
@@ -713,6 +719,7 @@ function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uin
     payout: _Tokens;
 }): {
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     wager: Tokens;
     activeLines: bigint;
@@ -721,6 +728,7 @@ function from_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         won: value.won,
+        betMultiplier: value.betMultiplier,
         winningLines: value.winningLines,
         wager: value.wager,
         activeLines: value.activeLines,

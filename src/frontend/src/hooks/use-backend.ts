@@ -185,9 +185,15 @@ export function useSpin() {
   const { actor } = useBackend();
   const queryClient = useQueryClient();
   return useCallback(
-    async (activeLines: number): Promise<SpinOutcome> => {
+    async (
+      activeLines: number,
+      betMultiplier: number,
+    ): Promise<SpinOutcome> => {
       if (!actor) throw new Error("Actor not ready");
-      const result = await actor.spin(BigInt(activeLines));
+      const result = await actor.spin(
+        BigInt(activeLines),
+        BigInt(betMultiplier),
+      );
       if (result.__kind__ === "err") {
         throw new Error(result.err);
       }

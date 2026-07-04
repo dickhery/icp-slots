@@ -119,8 +119,8 @@ export function PayTable() {
           Payout Table
         </CardTitle>
         <CardDescription>
-          Match symbols left-to-right on any active payline. Prizes scale per
-          line bet (0.01 ICP). Long-run return to player: ~98%.
+          Match symbols left-to-right on any active payline. Prizes scale with
+          your per-line bet (0.01–0.05 ICP). Long-run return to player: ~98%.
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -59,6 +59,7 @@ type SpinResult =
 type SpinRecord = 
  record {
    activeLines: nat;
+   betMultiplier: nat;
    id: nat;
    payout: Tokens;
    reels: ReelGrid;
@@ -70,6 +71,7 @@ type SpinRecord =
 type SpinOutcome = 
  record {
    activeLines: nat;
+   betMultiplier: nat;
    payout: Tokens;
    reels: ReelGrid;
    wager: Tokens;
@@ -147,7 +149,7 @@ service : {
   getSpinHistory: () -> (vec SpinRecord) query;
   getTransactionHistory: () -> (vec Transaction) query;
   isCallerAdmin: () -> (bool) query;
-  spin: (activeLines: nat) -> (SpinResult);
+  spin: (activeLines: nat, betMultiplier: nat) -> (SpinResult);
   syncDeposit: () -> (SyncDepositResult);
   syncHouseDeposit: () -> (SyncDepositResult);
   transfer: (to: AccountIdentifier, amount: Tokens) -> (TransferResult);

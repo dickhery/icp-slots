@@ -73,6 +73,17 @@ type OldSpinRecord__312717468 =
     wager : Nat;
     won : Bool
   };
+type OldSpinRecord__571037088 =
+  {
+    activeLines : Nat;
+    id : Nat;
+    payout : Nat;
+    reels : [[Symbol__502995576]];
+    timestamp : Nat;
+    wager : Nat;
+    winningLines : [Nat];
+    won : Bool
+  };
 type OldSymbol__584154943 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
 type Player__256311133 =
   {
@@ -87,11 +98,24 @@ type ReelGrid__28870947 = [[Symbol__494242018]];
 type SpinRecord__162179125 =
   {
     activeLines : Nat;
+    betMultiplier : Nat;
     id : Nat;
     payout : Tokens__151796392;
     reels : ReelGrid__28870947;
     timestamp : Timestamp__867202833;
     wager : Tokens__151796392;
+    winningLines : [Nat];
+    won : Bool
+  };
+type SpinRecord__232338467 =
+  {
+    activeLines : Nat;
+    betMultiplier : Nat;
+    id : Nat;
+    payout : Nat;
+    reels : [[Symbol__502995576]];
+    timestamp : Nat;
+    wager : Nat;
     winningLines : [Nat];
     won : Bool
   };
@@ -118,6 +142,8 @@ type SpinRecord__902757050 =
 type SubAccount__963172435 = Blob;
 type Symbol__174410647 = {#bar; #bell; #cherry; #diamond; #lemon; #seven};
 type Symbol__494242018 =
+  {#bar; #bell; #cherry; #diamond; #horseshoe; #lemon; #seven; #star};
+type Symbol__502995576 =
   {#bar; #bell; #cherry; #diamond; #horseshoe; #lemon; #seven; #star};
 type Symbol__528397727 =
   {#bar; #bell; #cherry; #diamond; #horseshoe; #lemon; #seven; #star};
@@ -166,7 +192,17 @@ type UserRole__364273487 = {#admin; #guest; #user};
       {houseBalance : NewHouseBalance__866847553};
   "20260703_210000_HouseDepositLedgerSplit" :
     (old : {houseBalance : OldHouseBalance__934206148}) ->
-      {houseBalance : NewHouseBalance__121789083}
+      {houseBalance : NewHouseBalance__121789083};
+  "20260704_010000_BetMultiplier" :
+    (old : {
+             spinHistory :
+               Map__166311111<Principal,
+                               List__653618698<OldSpinRecord__571037088>>
+           }) ->
+      {
+        spinHistory :
+          Map__166311111<Principal, List__653618698<SpinRecord__232338467>>
+      }
 }
 actor  {
   stable accessControlState :

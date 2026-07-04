@@ -15,6 +15,9 @@ module {
   public let ROW_COUNT : Nat = 3;
   public let MAX_PAYLINES : Nat = 9;
 
+  // Per-line bet multiplier: 1× (0.01 ICP) through 5× (0.05 ICP).
+  public let MAX_BET_MULTIPLIER : Nat = 5;
+
   // Maximum number of spin records kept per player.
   public let SPIN_HISTORY_LIMIT : Nat = 20;
 
@@ -107,8 +110,12 @@ module {
     activeLines == 1 or activeLines == 3 or activeLines == 5 or activeLines == 9;
   };
 
-  public func computeWager(activeLines : Nat) : Common.Tokens {
-    SPIN_COST * activeLines;
+  public func isValidBetMultiplier(betMultiplier : Nat) : Bool {
+    betMultiplier >= 1 and betMultiplier <= MAX_BET_MULTIPLIER;
+  };
+
+  public func computeWager(activeLines : Nat, betMultiplier : Nat) : Common.Tokens {
+    SPIN_COST * activeLines * betMultiplier;
   };
 
   public func generateSpin(seed : Nat) : SlotGame.ReelGrid {
@@ -130,7 +137,7 @@ module {
     });
   };
 
-  public func computePayout(symbols : [SlotGame.Symbol]) : Common.Tokens {
+  public func computePayout(symbols : [SlotGame.Symbol], betMultiplier : Nat) : Common.Tokens {
     if (symbols.size() < 2) return 0;
     let first = symbols[0];
     var runLen = 1;
@@ -142,16 +149,20 @@ module {
     let entry = payoutTable[symbolIndex(first)];
     if (runLen < entry.fromCount) return 0;
     let multiplier = entry.perSymbol * runLen;
-    SPIN_COST * multiplier;
+    SPIN_COST * multiplier * betMultiplier;
   };
 
-  public func evaluateSpin(reels : SlotGame.ReelGrid, activeLines : Nat) : SlotGame.SpinOutcome {
+  public func evaluateSpin(
+    reels : SlotGame.ReelGrid,
+    activeLines : Nat,
+    betMultiplier : Nat,
+  ) : SlotGame.SpinOutcome {
     var totalPayout : Common.Tokens = 0;
     let winning = List.empty<Nat>();
     var lineIdx = 0;
     while (lineIdx < activeLines and lineIdx < MAX_PAYLINES) {
       let lineSymbols = extractPayline(reels, lineIdx);
-      let linePayout = computePayout(lineSymbols);
+      let linePayout = computePayout(lineSymbols, betMultiplier);
       if (linePayout > 0) {
         totalPayout += linePayout;
         winning.add(lineIdx);
@@ -161,7 +172,8 @@ module {
     {
       reels;
       activeLines;
-      wager = computeWager(activeLines);
+      betMultiplier;
+      wager = computeWager(activeLines, betMultiplier);
       won = totalPayout > 0;
       payout = totalPayout;
       winningLines = winning.toArray();

@@ -16,6 +16,7 @@ export interface DepositAccountView {
 export interface SpinRecord {
     id: bigint;
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     timestamp: Timestamp;
     wager: Tokens;
@@ -97,6 +98,7 @@ export type TransferResult = {
 export type AccountIdentifier = Uint8Array;
 export interface SpinOutcome {
     won: boolean;
+    betMultiplier: bigint;
     winningLines: Array<bigint>;
     wager: Tokens;
     activeLines: bigint;
@@ -164,7 +166,7 @@ export interface backendInterface {
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
-    spin(activeLines: bigint): Promise<SpinResult>;
+    spin(activeLines: bigint, betMultiplier: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;
     transfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;

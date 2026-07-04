@@ -8,11 +8,13 @@ import { useBalance } from "@/hooks/use-balance";
 import { useGameAudio } from "@/hooks/use-game-audio";
 import { cn } from "@/lib/utils";
 import type {
+  BetMultiplier,
   LineCount,
   ReelGrid,
   SlotSymbol as SlotSymbolType,
 } from "@/types";
 import { ICP_LEDGER_FEE_E8S, computeWager, formatIcp } from "@/types";
+import { BetMultiplierSelector } from "./BetMultiplierSelector";
 import { LineSelector } from "./LineSelector";
 import { Payline } from "./Payline";
 import { Reel } from "./Reel";
@@ -41,6 +43,7 @@ export function SlotMachine() {
 
   const [display, setDisplay] = useState<ReelGrid>(REST_GRID);
   const [activeLines, setActiveLines] = useState<LineCount>(1);
+  const [betMultiplier, setBetMultiplier] = useState<BetMultiplier>(1);
   const [spinPhase, setSpinPhase] = useState<SpinPhase>("idle");
   const [won, setWon] = useState(false);
   const [payout, setPayout] = useState(0n);
@@ -57,7 +60,7 @@ export function SlotMachine() {
   const reelCount = 5;
   const spinSettleMs = reelDurationMs + (reelCount - 1) * reelStaggerMs + 250;
 
-  const wager = computeWager(activeLines);
+  const wager = computeWager(activeLines, betMultiplier);
   const totalDebit = wager + ICP_LEDGER_FEE_E8S;
   const insufficientFunds = balance.e8s !== null && balance.e8s < totalDebit;
   const canSpin =
@@ -79,7 +82,7 @@ export function SlotMachine() {
     playPayment();
     const id = ++spinIdRef.current;
     try {
-      const outcome = await spin(activeLines);
+      const outcome = await spin(activeLines, betMultiplier);
       if (id !== spinIdRef.current) return;
 
       setDisplay(outcome.reels as ReelGrid);
@@ -175,10 +178,16 @@ export function SlotMachine() {
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 grid gap-4 sm:grid-cols-2">
         <LineSelector
           value={activeLines}
+          betMultiplier={betMultiplier}
           onChange={setActiveLines}
+          disabled={busy}
+        />
+        <BetMultiplierSelector
+          value={betMultiplier}
+          onChange={setBetMultiplier}
           disabled={busy}
         />
       </div>

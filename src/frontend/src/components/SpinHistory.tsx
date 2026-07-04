@@ -99,8 +99,8 @@ export function SpinHistory({ spins, isLoading }: SpinHistoryProps) {
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {spin.won
-                      ? `${spin.winningLines.length} line${spin.winningLines.length === 1 ? "" : "s"}`
-                      : `${Number(spin.activeLines)} lines`}
+                      ? `${spin.winningLines.length} line${spin.winningLines.length === 1 ? "" : "s"} · ${Number(spin.betMultiplier)}×`
+                      : `${Number(spin.activeLines)} lines · ${Number(spin.betMultiplier)}×`}
                   </p>
                 </div>
               </li>

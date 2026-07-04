@@ -74,6 +74,7 @@ export const ReelGrid = IDL.Vec(IDL.Vec(Symbol));
 export const SpinRecord = IDL.Record({
   'id' : IDL.Nat,
   'won' : IDL.Bool,
+  'betMultiplier' : IDL.Nat,
   'winningLines' : IDL.Vec(IDL.Nat),
   'timestamp' : Timestamp,
   'wager' : Tokens,
@@ -97,6 +98,7 @@ export const Transaction = IDL.Record({
 });
 export const SpinOutcome = IDL.Record({
   'won' : IDL.Bool,
+  'betMultiplier' : IDL.Nat,
   'winningLines' : IDL.Vec(IDL.Nat),
   'wager' : Tokens,
   'activeLines' : IDL.Nat,
@@ -135,7 +137,7 @@ export const idlService = IDL.Service({
   'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
   'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'spin' : IDL.Func([IDL.Nat], [SpinResult], []),
+  'spin' : IDL.Func([IDL.Nat, IDL.Nat], [SpinResult], []),
   'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
   'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
   'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),
@@ -210,6 +212,7 @@ export const idlFactory = ({ IDL }) => {
   const SpinRecord = IDL.Record({
     'id' : IDL.Nat,
     'won' : IDL.Bool,
+    'betMultiplier' : IDL.Nat,
     'winningLines' : IDL.Vec(IDL.Nat),
     'timestamp' : Timestamp,
     'wager' : Tokens,
@@ -233,6 +236,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const SpinOutcome = IDL.Record({
     'won' : IDL.Bool,
+    'betMultiplier' : IDL.Nat,
     'winningLines' : IDL.Vec(IDL.Nat),
     'wager' : Tokens,
     'activeLines' : IDL.Nat,
@@ -275,7 +279,7 @@ export const idlFactory = ({ IDL }) => {
     'getSpinHistory' : IDL.Func([], [IDL.Vec(SpinRecord)], ['query']),
     'getTransactionHistory' : IDL.Func([], [IDL.Vec(Transaction)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'spin' : IDL.Func([IDL.Nat], [SpinResult], []),
+    'spin' : IDL.Func([IDL.Nat, IDL.Nat], [SpinResult], []),
     'syncDeposit' : IDL.Func([], [SyncDepositResult], []),
     'syncHouseDeposit' : IDL.Func([], [SyncDepositResult], []),
     'transfer' : IDL.Func([AccountIdentifier, Tokens], [TransferResult], []),

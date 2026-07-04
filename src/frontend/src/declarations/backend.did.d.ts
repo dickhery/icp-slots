@@ -44,6 +44,7 @@ export type Result = { 'ok' : null } |
   { 'err' : Error };
 export interface SpinOutcome {
   'won' : boolean,
+  'betMultiplier' : bigint,
   'winningLines' : Array<bigint>,
   'wager' : Tokens,
   'activeLines' : bigint,
@@ -53,6 +54,7 @@ export interface SpinOutcome {
 export interface SpinRecord {
   'id' : bigint,
   'won' : boolean,
+  'betMultiplier' : bigint,
   'winningLines' : Array<bigint>,
   'timestamp' : Timestamp,
   'wager' : Tokens,
@@ -122,7 +124,7 @@ export interface _SERVICE {
   'getSpinHistory' : ActorMethod<[], Array<SpinRecord>>,
   'getTransactionHistory' : ActorMethod<[], Array<Transaction>>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'spin' : ActorMethod<[bigint], SpinResult>,
+  'spin' : ActorMethod<[bigint, bigint], SpinResult>,
   'syncDeposit' : ActorMethod<[], SyncDepositResult>,
   'syncHouseDeposit' : ActorMethod<[], SyncDepositResult>,
   'transfer' : ActorMethod<[AccountIdentifier, Tokens], TransferResult>,

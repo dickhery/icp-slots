@@ -67,6 +67,11 @@ export const ICP_LEDGER_FEE_E8S = 10_000n;
 export const LINE_OPTIONS = [1, 3, 5, 9] as const;
 export type LineCount = (typeof LINE_OPTIONS)[number];
 
+/** Per-line bet multipliers (1× = 0.01 ICP, 5× = 0.05 ICP). */
+export const BET_MULTIPLIER_OPTIONS = [1, 2, 3, 4, 5] as const;
+export type BetMultiplier = (typeof BET_MULTIPLIER_OPTIONS)[number];
+export const MAX_BET_MULTIPLIER = 5;
+
 /** Display colors for each payline overlay (line 1–9). */
 export const PAYLINE_COLORS: readonly string[] = [
   "oklch(0.82 0.16 80)",
@@ -114,9 +119,14 @@ export const PAYLINE_DEFS: readonly (readonly [
 
 export const MAX_PAYLINES = PAYLINE_DEFS.length;
 
-/** Total wager for a spin with the given number of active lines. */
-export function computeWager(activeLines: number): bigint {
-  return SPIN_COST_E8S * BigInt(activeLines);
+/** Per-line wager for the chosen multiplier. */
+export function computeLineBet(betMultiplier: number): bigint {
+  return SPIN_COST_E8S * BigInt(betMultiplier);
+}
+
+/** Total wager for a spin with active lines and per-line multiplier. */
+export function computeWager(activeLines: number, betMultiplier = 1): bigint {
+  return SPIN_COST_E8S * BigInt(activeLines) * BigInt(betMultiplier);
 }
 
 /** Format an e8s amount as a human-readable ICP string. */

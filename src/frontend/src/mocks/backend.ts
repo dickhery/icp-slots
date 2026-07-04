@@ -43,6 +43,7 @@ const spinHistory: Array<{
   won: boolean;
   reels: Sym[][];
   activeLines: bigint;
+  betMultiplier: bigint;
   winningLines: bigint[];
   timestamp: bigint;
   wager: bigint;
@@ -59,6 +60,7 @@ const spinHistory: Array<{
       [Sym.cherry, Sym.lemon, Sym.diamond],
     ],
     activeLines: 1n,
+    betMultiplier: 1n,
     winningLines: [0n],
     timestamp: BigInt(Date.now() - 60_000) * 1_000_000n,
     wager: SPIN_COST,
@@ -75,6 +77,7 @@ const spinHistory: Array<{
       [Sym.seven, Sym.diamond, Sym.cherry],
     ],
     activeLines: 3n,
+    betMultiplier: 1n,
     winningLines: [],
     timestamp: BigInt(Date.now() - 120_000) * 1_000_000n,
     wager: SPIN_COST * 3n,
@@ -201,18 +204,19 @@ export const mockBackend: backendInterface = {
   async isCallerAdmin() {
     return false;
   },
-  async spin(activeLines: bigint) {
-    const wager = SPIN_COST * activeLines;
+  async spin(activeLines: bigint, betMultiplier: bigint) {
+    const wager = SPIN_COST * activeLines * betMultiplier;
     balance -= wager;
     const reels = randomGrid();
     const won = reels[0][1] === reels[1][1] && reels[1][1] === reels[2][1];
-    const payout = won ? 10_000_000n : 0n;
+    const payout = won ? 10_000_000n * betMultiplier : 0n;
     if (won) balance += payout;
     spinHistory.unshift({
       id: BigInt(spinHistory.length),
       won,
       reels,
       activeLines,
+      betMultiplier,
       winningLines: won ? [0n] : [],
       timestamp: BigInt(Date.now()) * 1_000_000n,
       wager,
@@ -224,6 +228,7 @@ export const mockBackend: backendInterface = {
         won,
         reels,
         activeLines,
+        betMultiplier,
         wager,
         payout,
         winningLines: won ? [0n] : [],

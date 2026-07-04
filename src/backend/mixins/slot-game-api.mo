@@ -526,8 +526,9 @@ mixin (
     caller : Principal,
     player : SlotGame.Player,
     activeLines : Nat,
+    betMultiplier : Nat,
   ) : async SlotGame.SpinResult {
-    let wager = SlotGameLib.computeWager(activeLines);
+    let wager = SlotGameLib.computeWager(activeLines, betMultiplier);
     let reservedFee = cachedLedgerFee;
     let playerDebit = wager + reservedFee;
     if (player.balance < playerDebit) {
@@ -538,7 +539,11 @@ mixin (
     };
 
     let seed = nowTimestamp() + Nat.fromNat32(caller.hash()) + counters.nextSpinId;
-    let outcome = SlotGameLib.evaluateSpin(SlotGameLib.generateSpin(seed), activeLines);
+    let outcome = SlotGameLib.evaluateSpin(
+      SlotGameLib.generateSpin(seed),
+      activeLines,
+      betMultiplier,
+    );
     var payoutReserved = if (outcome.won) outcome.payout + reservedFee else 0;
     if (houseBalance.balance < payoutReserved) {
       return #err("House vault is temporarily underfunded for this payout; ask the administrator to fund and sync it");
@@ -634,6 +639,7 @@ mixin (
       timestamp = nowTimestamp();
       reels = outcome.reels;
       activeLines = outcome.activeLines;
+      betMultiplier = outcome.betMultiplier;
       wager = outcome.wager;
       payout = outcome.payout;
       won = outcome.won;
@@ -646,9 +652,12 @@ mixin (
     #ok(outcome);
   };
 
-  public shared ({ caller }) func spin(activeLines : Nat) : async SlotGame.SpinResult {
+  public shared ({ caller }) func spin(activeLines : Nat, betMultiplier : Nat) : async SlotGame.SpinResult {
     if (not SlotGameLib.isValidLineCount(activeLines)) {
       return #err("activeLines must be 1, 3, 5, or 9");
+    };
+    if (not SlotGameLib.isValidBetMultiplier(betMultiplier)) {
+      return #err("betMultiplier must be between 1 and 5");
     };
     let player = requirePlayer(caller);
     switch (acquirePlayerGuard(caller)) {
@@ -663,7 +672,7 @@ mixin (
       case (#ok) {};
     };
     try {
-      await executeSpin(caller, player, activeLines);
+      await executeSpin(caller, player, activeLines, betMultiplier);
     } finally {
       releaseHouseGuard();
       releasePlayerGuard(caller);
