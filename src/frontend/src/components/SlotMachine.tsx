@@ -127,7 +127,7 @@ export function SlotMachine() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-5 shadow-cabinet backdrop-blur-sm transition-smooth sm:p-8",
+        "relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-3 shadow-cabinet backdrop-blur-sm transition-smooth sm:p-5 md:p-8",
         busy && "border-accent/60 shadow-gold",
       )}
       data-ocid="slot.cabinet"
@@ -184,10 +184,10 @@ export function SlotMachine() {
       </div>
 
       <div
-        className="relative rounded-xl border border-border/70 bg-background/60 p-3 vault-grain"
+        className="relative overflow-hidden rounded-xl border border-border/70 bg-background/60 p-1.5 vault-grain sm:p-3"
         data-ocid="slot.reel_window"
       >
-        <div ref={reelGridRef} className="relative mx-auto w-fit">
+        <div ref={reelGridRef} className="relative mx-auto w-full max-w-full">
           <Payline
             containerRef={reelGridRef}
             spinPhase={spinPhase}
@@ -195,7 +195,7 @@ export function SlotMachine() {
             winningLines={winningLines}
             celebrating={won}
           />
-          <div className="relative z-10 flex justify-center gap-2 sm:gap-3">
+          <div className="relative z-10 grid w-full grid-cols-5 gap-[clamp(0.125rem,1.2vw,0.75rem)]">
             {(["a", "b", "c", "d", "e"] as const).map((reelId, i) => (
               <Reel
                 key={reelId}

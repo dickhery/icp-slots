@@ -20,6 +20,12 @@ export function LineSelector({ value, onChange, disabled }: LineSelectorProps) {
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Active Paylines
+          {value > 1 ? (
+            <span className="normal-case tracking-normal text-muted-foreground/80">
+              {" "}
+              · lines cycle on reels
+            </span>
+          ) : null}
         </p>
         <p className="font-mono text-xs text-accent">
           {formatIcp(SPIN_COST_E8S)} ICP / line

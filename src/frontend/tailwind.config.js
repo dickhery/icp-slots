@@ -146,6 +146,20 @@ export default {
           "0%, 100%": { transform: "scale(1) rotate(-1deg)" },
           "50%": { transform: "scale(1.06) rotate(1deg)" },
         },
+        "payline-preview": {
+          "0%, 100%": { strokeOpacity: "0.92" },
+          "50%": { strokeOpacity: "1" },
+        },
+        "payline-win": {
+          "0%, 100%": {
+            strokeOpacity: "0.85",
+            filter: "drop-shadow(0 0 2px oklch(0.82 0.16 80 / 0.4))",
+          },
+          "50%": {
+            strokeOpacity: "1",
+            filter: "drop-shadow(0 0 8px oklch(0.82 0.16 80 / 0.85))",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -158,6 +172,8 @@ export default {
         "payment-ready": "payment-ready 0.28s ease-out both",
         "payment-scan": "payment-scan 1.1s ease-in-out infinite",
         "jackpot-burst": "jackpot-burst 0.6s ease-in-out 3",
+        "payline-preview": "payline-preview 1.4s ease-in-out infinite",
+        "payline-win": "payline-win 0.75s ease-in-out infinite",
       },
     },
   },

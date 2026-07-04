@@ -67,6 +67,32 @@ export const ICP_LEDGER_FEE_E8S = 10_000n;
 export const LINE_OPTIONS = [1, 3, 5, 9] as const;
 export type LineCount = (typeof LINE_OPTIONS)[number];
 
+/** Display colors for each payline overlay (line 1–9). */
+export const PAYLINE_COLORS: readonly string[] = [
+  "oklch(0.82 0.16 80)",
+  "oklch(0.7 0.18 150)",
+  "oklch(0.65 0.2 250)",
+  "oklch(0.72 0.18 305)",
+  "oklch(0.78 0.15 70)",
+  "oklch(0.68 0.22 25)",
+  "oklch(0.75 0.14 195)",
+  "oklch(0.7 0.16 45)",
+  "oklch(0.66 0.14 130)",
+] as const;
+
+/** Short labels shown when a payline is highlighted. */
+export const PAYLINE_LABELS: readonly string[] = [
+  "Line 1 · Middle",
+  "Line 2 · Top",
+  "Line 3 · Bottom",
+  "Line 4 · V Down",
+  "Line 5 · V Up",
+  "Line 6 · W Low",
+  "Line 7 · W High",
+  "Line 8 · Zig Up",
+  "Line 9 · Zig Down",
+] as const;
+
 /** Nine classic paylines (row index per reel column). */
 export const PAYLINE_DEFS: readonly (readonly [
   number,
