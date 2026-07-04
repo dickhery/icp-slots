@@ -50,6 +50,7 @@ export function SlotMachine() {
   const spinIdRef = useRef(0);
   const spinLockedRef = useRef(false);
   const settleTimerRef = useRef<number | null>(null);
+  const reelGridRef = useRef<HTMLDivElement>(null);
 
   const reelDurationMs = 900;
   const reelStaggerMs = 180;
@@ -186,23 +187,27 @@ export function SlotMachine() {
         className="relative rounded-xl border border-border/70 bg-background/60 p-3 vault-grain"
         data-ocid="slot.reel_window"
       >
-        <Payline
-          activeLines={activeLines}
-          winningLines={winningLines}
-          celebrating={won}
-        />
-        <div className="relative z-10 flex justify-center gap-2 sm:gap-3">
-          {(["a", "b", "c", "d", "e"] as const).map((reelId, i) => (
-            <Reel
-              key={reelId}
-              index={i}
-              targets={
-                display[i] as [SlotSymbolType, SlotSymbolType, SlotSymbolType]
-              }
-              spinning={spinning}
-              durationMs={reelDurationMs}
-            />
-          ))}
+        <div ref={reelGridRef} className="relative mx-auto w-fit">
+          <Payline
+            containerRef={reelGridRef}
+            spinPhase={spinPhase}
+            activeLines={activeLines}
+            winningLines={winningLines}
+            celebrating={won}
+          />
+          <div className="relative z-10 flex justify-center gap-2 sm:gap-3">
+            {(["a", "b", "c", "d", "e"] as const).map((reelId, i) => (
+              <Reel
+                key={reelId}
+                index={i}
+                targets={
+                  display[i] as [SlotSymbolType, SlotSymbolType, SlotSymbolType]
+                }
+                spinning={spinning}
+                durationMs={reelDurationMs}
+              />
+            ))}
+          </div>
         </div>
         {paying ? (
           <div

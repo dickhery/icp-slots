@@ -95,6 +95,7 @@ export function Reel({
     return (
       <div
         ref={viewportRef}
+        data-reel-col={index}
         className={reelShellClass}
         aria-label={`Reel ${index + 1}`}
       >
@@ -125,6 +126,7 @@ export function Reel({
   return (
     <div
       ref={viewportRef}
+      data-reel-col={index}
       className={reelShellClass}
       aria-label={`Reel ${index + 1}`}
     >
