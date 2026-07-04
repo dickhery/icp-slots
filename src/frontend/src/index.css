@@ -170,6 +170,16 @@
       oklch(0.1 0.01 50) 100%
     );
   }
+  .reel-strip {
+    contain: layout style;
+    backface-visibility: hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .reel-strip {
+    contain: strict;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

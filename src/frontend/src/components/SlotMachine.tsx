@@ -206,7 +206,7 @@ export function SlotMachine() {
         </div>
         {paying ? (
           <div
-            className="absolute inset-0 z-20 grid place-items-center overflow-hidden rounded-xl bg-background/80 backdrop-blur-sm"
+            className="absolute inset-0 z-20 grid place-items-center overflow-hidden rounded-xl bg-background/90 sm:bg-background/80 sm:backdrop-blur-sm"
             data-ocid="slot.payment_pending"
             aria-live="polite"
           >

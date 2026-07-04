@@ -106,8 +106,12 @@ export default {
           to: { height: "0" },
         },
         "reel-spin": {
-          "0%": { transform: "translateY(0)" },
-          "100%": { transform: "translateY(-100%)" },
+          "0%": { transform: "translate3d(0, 0, 0)" },
+          "100%": { transform: "translate3d(0, -100%, 0)" },
+        },
+        "reel-spin-mobile": {
+          "0%": { transform: "translate3d(0, 0, 0)" },
+          "100%": { transform: "translate3d(0, -66.666%, 0)" },
         },
         "win-flash": {
           "0%, 100%": {
@@ -146,7 +150,8 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "reel-spin": "reel-spin 0.12s linear infinite",
+        "reel-spin": "reel-spin 0.14s linear infinite",
+        "reel-spin-mobile": "reel-spin-mobile 0.2s linear infinite",
         "win-flash": "win-flash 0.9s ease-in-out 2",
         "coin-drop": "coin-drop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both",
         "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",

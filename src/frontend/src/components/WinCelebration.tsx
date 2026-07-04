@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { getWinTier } from "@/hooks/use-game-audio";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { formatIcp } from "@/types";
 import type { Tokens } from "@/types";
@@ -17,6 +18,7 @@ interface WinCelebrationProps {
  * animation and flashes the win amount in gold.
  */
 export function WinCelebration({ payout, trigger }: WinCelebrationProps) {
+  const isMobile = useIsMobile();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,10 @@ export function WinCelebration({ payout, trigger }: WinCelebrationProps) {
   if (!visible) return null;
 
   const tier = getWinTier(payout);
-  const coinCount = tier === "big" ? 18 : tier === "medium" ? 12 : 8;
+  const baseCoins = tier === "big" ? 18 : tier === "medium" ? 12 : 8;
+  const coinCount = isMobile
+    ? Math.max(4, Math.floor(baseCoins / 2))
+    : baseCoins;
   const title =
     tier === "big"
       ? "Vault Jackpot"
@@ -41,7 +46,7 @@ export function WinCelebration({ payout, trigger }: WinCelebrationProps) {
     <div
       className={cn(
         "pointer-events-none absolute inset-0 z-30 grid place-items-center",
-        tier === "big" && "bg-accent/5 backdrop-blur-[1px]",
+        tier === "big" && "bg-accent/5 sm:backdrop-blur-[1px]",
       )}
       aria-live="assertive"
       data-ocid="win.celebration"
@@ -65,7 +70,7 @@ export function WinCelebration({ payout, trigger }: WinCelebrationProps) {
 
       <div
         className={cn(
-          "rounded-2xl border-2 border-accent bg-card/90 px-8 py-6 text-center shadow-gold-lg backdrop-blur-sm",
+          "rounded-2xl border-2 border-accent bg-card/95 px-6 py-5 text-center shadow-gold-lg sm:bg-card/90 sm:px-8 sm:py-6 sm:backdrop-blur-sm",
           "animate-coin-drop",
           tier === "medium" && "ring-4 ring-accent/15",
           tier === "big" && "animate-jackpot-burst ring-8 ring-accent/20",
