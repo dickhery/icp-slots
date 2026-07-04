@@ -51,7 +51,7 @@ type Symbol =
    seven;
    star;
  };
-type SpinResult =
+type SpinResult = 
  variant {
    err: text;
    ok: SpinOutcome;
