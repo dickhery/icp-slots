@@ -6,6 +6,8 @@ export type WinTier = "small" | "medium" | "big";
 
 type AudioId =
   | "payment"
+  | "reelSpin"
+  | "reelStop"
   | "smallMusic"
   | "smallTokens"
   | "mediumMusic"
@@ -16,10 +18,17 @@ type AudioId =
 interface AudioConfig {
   path: string;
   volume: number;
+  loop?: boolean;
 }
 
 const AUDIO_CONFIG: Record<AudioId, AudioConfig> = {
   payment: { path: "/assets/audio/pay_sound.mp3", volume: 0.72 },
+  reelSpin: {
+    path: "/assets/audio/reel_spin.mp3",
+    volume: 0.58,
+    loop: true,
+  },
+  reelStop: { path: "/assets/audio/reel_stop.mp3", volume: 0.82 },
   smallMusic: { path: "/assets/audio/small_win_music.mp3", volume: 0.52 },
   smallTokens: { path: "/assets/audio/small_win_tokens.mp3", volume: 0.78 },
   mediumMusic: {
@@ -63,8 +72,12 @@ export function useGameAudio() {
       AudioConfig,
     ][]) {
       const audio = new Audio(config.path);
-      audio.preload = id === "payment" ? "auto" : "metadata";
+      audio.preload =
+        id === "payment" || id === "reelSpin" || id === "reelStop"
+          ? "auto"
+          : "metadata";
       audio.volume = config.volume;
+      audio.loop = config.loop ?? false;
       audioRef.current[id] = audio;
     }
 
@@ -99,6 +112,20 @@ export function useGameAudio() {
   );
 
   const playPayment = useCallback(() => playTracks(["payment"]), [playTracks]);
+  const playReelSpin = useCallback(
+    () => playTracks(["reelSpin"]),
+    [playTracks],
+  );
+  const playReelStop = useCallback(
+    () => playTracks(["reelStop"]),
+    [playTracks],
+  );
+  const stopReelSpin = useCallback(() => {
+    const audio = audioRef.current.reelSpin;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, []);
 
   const playWin = useCallback(
     (payout: Tokens) => {
@@ -142,5 +169,13 @@ export function useGameAudio() {
     });
   }, []);
 
-  return { muted, playPayment, playWin, toggleMuted };
+  return {
+    muted,
+    playPayment,
+    playReelSpin,
+    playReelStop,
+    playWin,
+    stopReelSpin,
+    toggleMuted,
+  };
 }

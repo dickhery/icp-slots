@@ -1,5 +1,5 @@
 import { LoaderCircle, Volume2, VolumeX } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Symbol as SlotSymbol } from "@/backend";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,15 @@ export function SlotMachine() {
   const balance = useBalance();
   const spin = useSpin();
   const { data: history = [] } = useSpinHistory();
-  const { muted, playPayment, playWin, toggleMuted } = useGameAudio();
+  const {
+    muted,
+    playPayment,
+    playReelSpin,
+    playReelStop,
+    playWin,
+    stopReelSpin,
+    toggleMuted,
+  } = useGameAudio();
 
   const [display, setDisplay] = useState<ReelGrid>(REST_GRID);
   const [activeLines, setActiveLines] = useState<LineCount>(1);
@@ -52,6 +60,7 @@ export function SlotMachine() {
   const [error, setError] = useState<string | null>(null);
   const spinIdRef = useRef(0);
   const spinLockedRef = useRef(false);
+  const stoppedReelsRef = useRef(new Set<number>());
   const settleTimerRef = useRef<number | null>(null);
   const reelGridRef = useRef<HTMLDivElement>(null);
 
@@ -74,14 +83,26 @@ export function SlotMachine() {
   const spinning = spinPhase === "spinning";
   const busy = spinPhase !== "idle";
 
+  const handleReelStop = useCallback(
+    (index: number) => {
+      if (stoppedReelsRef.current.has(index)) return;
+      stoppedReelsRef.current.add(index);
+      playReelStop();
+      if (stoppedReelsRef.current.size === reelCount) stopReelSpin();
+    },
+    [playReelStop, stopReelSpin],
+  );
+
   const handleSpin = async () => {
     if (spinLockedRef.current || !canSpin) return;
     spinLockedRef.current = true;
     setError(null);
     setWon(false);
     setWinningLines([]);
+    stoppedReelsRef.current.clear();
     setSpinPhase("paying");
     playPayment();
+    playReelSpin();
     const id = ++spinIdRef.current;
     try {
       const outcome = await spin(activeLines, betMultiplier);
@@ -92,6 +113,7 @@ export function SlotMachine() {
 
       settleTimerRef.current = window.setTimeout(() => {
         if (id !== spinIdRef.current) return;
+        stopReelSpin();
         setSpinPhase("idle");
         spinLockedRef.current = false;
         const wins = outcome.winningLines.map(Number);
@@ -105,6 +127,7 @@ export function SlotMachine() {
       }, spinSettleMs);
     } catch (e) {
       if (id !== spinIdRef.current) return;
+      stopReelSpin();
       setSpinPhase("idle");
       spinLockedRef.current = false;
       setError(e instanceof Error ? e.message : "Spin failed");
@@ -224,6 +247,7 @@ export function SlotMachine() {
                 durationMs={reelDurationMs}
                 staggerMs={reelStaggerMs}
                 delayMs={reelDelayMs}
+                onStop={handleReelStop}
               />
             ))}
           </div>

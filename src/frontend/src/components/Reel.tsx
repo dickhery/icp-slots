@@ -25,6 +25,7 @@ interface ReelProps {
   durationMs?: number;
   staggerMs?: number;
   delayMs?: number;
+  onStop?: (index: number) => void;
 }
 
 type ReelStyle = CSSProperties & Record<`--${string}`, string | number>;
@@ -52,6 +53,7 @@ export function Reel({
   durationMs = 900,
   staggerMs = 140,
   delayMs = 75,
+  onStop,
 }: ReelProps) {
   const reelShellClass =
     "reel-edge reel-window-glass relative aspect-[19/60] w-full min-w-0 max-h-[15rem] overflow-hidden rounded-lg ring-1 ring-border/70 sm:max-h-[17.5rem] sm:aspect-[24/70]";
@@ -104,6 +106,7 @@ export function Reel({
     content = (
       <div
         className="reel-strip animate-reel-land will-change-transform"
+        onAnimationEnd={() => onStop?.(index)}
         style={
           {
             ...makeStripStyle(strip.length),
