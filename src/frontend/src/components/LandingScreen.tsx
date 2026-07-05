@@ -1,14 +1,10 @@
 import type { Symbol as SlotSymbol } from "@/backend";
 import { Symbol as Sym } from "@/backend";
+import { SymbolGlyph } from "@/components/SymbolGlyph";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  ICP_LEDGER_FEE_E8S,
-  SPIN_COST_E8S,
-  SYMBOL_META,
-  formatIcp,
-} from "@/types";
+import { ICP_LEDGER_FEE_E8S, SPIN_COST_E8S, formatIcp } from "@/types";
 import {
   CircleDollarSign,
   Dices,
@@ -102,26 +98,15 @@ export function LandingScreen() {
           className="neon-card mt-8 flex w-full max-w-lg items-stretch justify-center gap-2 rounded-2xl border border-border/60 bg-card/45 p-2 backdrop-blur-md sm:mt-10 sm:gap-3 sm:p-3"
           aria-hidden="true"
         >
-          {HERO_SYMBOLS.map((symbol, index) => {
-            const meta = SYMBOL_META[symbol];
-            return (
-              <div
-                key={symbol}
-                className="reel-edge reel-window-glass grid aspect-[3/4] flex-1 place-items-center rounded-xl border border-border/70 shadow-lg animate-landing-float"
-                style={{ animationDelay: `${index * 160}ms` }}
-              >
-                <span
-                  className={
-                    meta.glyph.length > 2
-                      ? "symbol-glow font-display text-sm font-bold text-accent sm:text-2xl"
-                      : "symbol-glow text-2xl sm:text-4xl"
-                  }
-                >
-                  {meta.glyph}
-                </span>
-              </div>
-            );
-          })}
+          {HERO_SYMBOLS.map((symbol, index) => (
+            <div
+              key={symbol}
+              className="reel-edge reel-window-glass grid aspect-[3/4] flex-1 place-items-center rounded-xl border border-border/70 shadow-lg animate-landing-float"
+              style={{ animationDelay: `${index * 160}ms` }}
+            >
+              <SymbolGlyph symbol={symbol} variant="hero" />
+            </div>
+          ))}
         </div>
 
         <section className="neon-card mt-8 w-full max-w-2xl rounded-2xl border border-border/70 bg-card/75 p-5 backdrop-blur-xl sm:p-7">

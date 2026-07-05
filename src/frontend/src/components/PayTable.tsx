@@ -1,3 +1,4 @@
+import { SymbolGlyph } from "@/components/SymbolGlyph";
 import {
   Card,
   CardContent,
@@ -149,9 +150,11 @@ export function PayTable() {
                     )}
                     aria-hidden="true"
                   >
-                    <span className="font-display text-lg font-bold leading-none">
-                      {meta.glyph}
-                    </span>
+                    <SymbolGlyph
+                      symbol={tier.symbol}
+                      variant="compact"
+                      className="scale-110"
+                    />
                   </span>
                   <span className="text-sm text-muted-foreground">
                     {tier.label}

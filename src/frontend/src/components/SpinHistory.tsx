@@ -1,3 +1,4 @@
+import { SymbolGlyph } from "@/components/SymbolGlyph";
 import {
   Card,
   CardContent,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { SpinRecord } from "@/types";
-import { SYMBOL_META, formatIcp } from "@/types";
+import { formatIcp } from "@/types";
 
 interface SpinHistoryProps {
   spins: SpinRecord[];
@@ -24,10 +25,9 @@ function MiniGrid({ reels }: { reels: SpinRecord["reels"] }) {
           {column.map((sym, rowIdx) => (
             <span
               key={`${colIdx}-${rowIdx}-${sym}`}
-              className="grid size-6 place-items-center rounded bg-background/70 text-xs font-bold sm:size-7 sm:text-sm"
-              aria-label={SYMBOL_META[sym].label}
+              className="grid size-6 place-items-center rounded bg-background/70 sm:size-7"
             >
-              {SYMBOL_META[sym].glyph}
+              <SymbolGlyph symbol={sym} variant="compact" />
             </span>
           ))}
         </div>

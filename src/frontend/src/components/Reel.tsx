@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
 import type { SlotSymbol } from "@/types";
 import { SYMBOL_META } from "@/types";
+import { SymbolGlyph } from "./SymbolGlyph";
 
 /** Ordered list of symbols used to build continuous, device-independent strips. */
 const ALL_SYMBOLS = Object.keys(SYMBOL_META) as SlotSymbol[];
@@ -57,17 +57,9 @@ export function Reel({
 }: ReelProps) {
   const reelShellClass =
     "reel-edge reel-window-glass relative aspect-[19/60] w-full min-w-0 max-h-[15rem] overflow-hidden rounded-lg ring-1 ring-border/70 sm:max-h-[17.5rem] sm:aspect-[24/70]";
-  const symbolSizeClass = "text-[clamp(1.15rem,5.2vw,2.5rem)]";
-  const textSymbolSizeClass = "text-[clamp(0.6rem,2.8vw,1.15rem)]";
-
   const renderCell = (symbol: SlotSymbol, key: string, moving = false) => (
     <div key={key} className="reel-cell grid min-h-0 w-full place-items-center">
-      <SymbolCell
-        symbol={symbol}
-        sizeClass={symbolSizeClass}
-        textSizeClass={textSymbolSizeClass}
-        moving={moving}
-      />
+      <SymbolGlyph symbol={symbol} variant="reel" moving={moving} />
     </div>
   );
 
@@ -136,44 +128,5 @@ export function Reel({
       <div className="pointer-events-none absolute inset-x-0 top-2/3 z-20 h-px bg-primary/20 shadow-[0_0_8px_oklch(0.72_0.24_15/0.3)]" />
       {content}
     </div>
-  );
-}
-
-function SymbolCell({
-  symbol,
-  sizeClass,
-  textSizeClass,
-  moving,
-}: {
-  symbol: SlotSymbol;
-  sizeClass: string;
-  textSizeClass: string;
-  moving: boolean;
-}) {
-  const meta = SYMBOL_META[symbol];
-  const accentText =
-    meta.accent === "accent"
-      ? "text-accent"
-      : meta.accent === "success"
-        ? "text-success"
-        : meta.accent === "warning"
-          ? "text-warning"
-          : "text-primary";
-  const isText =
-    symbol === "seven" || symbol === "bar" || symbol === "horseshoe";
-
-  return (
-    <span
-      className={cn(
-        "symbol-glow font-display font-bold leading-none",
-        isText ? textSizeClass : sizeClass,
-        accentText,
-        moving && "reel-symbol-moving",
-      )}
-      aria-label={meta.label}
-      role="img"
-    >
-      {meta.glyph}
-    </span>
   );
 }

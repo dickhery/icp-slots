@@ -207,6 +207,18 @@
   .symbol-glow {
     filter: drop-shadow(0 0 5px currentColor);
   }
+  .slot-seven {
+    background: linear-gradient(
+      165deg,
+      oklch(0.92 0.14 88) 0%,
+      oklch(0.82 0.16 80) 38%,
+      oklch(0.62 0.24 25) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 8px oklch(0.82 0.16 80 / 0.55));
+  }
   .reel-symbol-moving {
     filter: none;
     opacity: 0.9;

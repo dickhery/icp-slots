@@ -159,7 +159,7 @@ export const SYMBOL_META: Record<SlotSymbol, SymbolMeta> = {
   bar: { glyph: "BAR", label: "Bar", accent: "accent" },
   diamond: { glyph: "💎", label: "Diamond", accent: "success" },
   star: { glyph: "⭐", label: "Star", accent: "warning" },
-  horseshoe: { glyph: "H", label: "Horseshoe", accent: "success" },
+  horseshoe: { glyph: "⌒", label: "Horseshoe", accent: "success" },
 };
 
 /** Routes available in the app shell. */
