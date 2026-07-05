@@ -3,7 +3,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Symbol as SlotSymbol } from "@/backend";
 import { Button } from "@/components/ui/button";
-import { useSpin, useSpinHistory } from "@/hooks/use-backend";
+import {
+  applyOptimisticSpinDebit,
+  invalidateSpinCaches,
+  useSpin,
+  useSpinHistory,
+} from "@/hooks/use-backend";
 import { useBalance } from "@/hooks/use-balance";
 import { useGameAudio } from "@/hooks/use-game-audio";
 import { cn } from "@/lib/utils";
@@ -14,6 +19,7 @@ import type {
   SlotSymbol as SlotSymbolType,
 } from "@/types";
 import { ICP_LEDGER_FEE_E8S, computeWager, formatIcp } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
 import { BetMultiplierSelector } from "./BetMultiplierSelector";
 import { LineSelector } from "./LineSelector";
 import { Payline } from "./Payline";
@@ -36,6 +42,7 @@ type SpinPhase = "idle" | "paying" | "spinning";
  * spin button that charges 0.01 ICP per active line.
  */
 export function SlotMachine() {
+  const queryClient = useQueryClient();
   const balance = useBalance();
   const spin = useSpin();
   const { data: history = [] } = useSpinHistory();
@@ -100,6 +107,7 @@ export function SlotMachine() {
     setWon(false);
     setWinningLines([]);
     stoppedReelsRef.current.clear();
+    applyOptimisticSpinDebit(queryClient, totalDebit);
     setSpinPhase("paying");
     playPayment();
     playReelSpin();
@@ -113,24 +121,30 @@ export function SlotMachine() {
 
       settleTimerRef.current = window.setTimeout(() => {
         if (id !== spinIdRef.current) return;
-        stopReelSpin();
-        setSpinPhase("idle");
-        spinLockedRef.current = false;
-        const wins = outcome.winningLines.map(Number);
-        setWinningLines(wins);
-        if (outcome.won && outcome.payout > 0n) {
-          setWon(true);
-          setPayout(outcome.payout);
-          setWinTrigger((n) => n + 1);
-          playWin(outcome.payout);
-        }
+        void invalidateSpinCaches(queryClient).finally(() => {
+          if (id !== spinIdRef.current) return;
+          stopReelSpin();
+          setSpinPhase("idle");
+          spinLockedRef.current = false;
+          const wins = outcome.winningLines.map(Number);
+          setWinningLines(wins);
+          if (outcome.won && outcome.payout > 0n) {
+            setWon(true);
+            setPayout(outcome.payout);
+            setWinTrigger((n) => n + 1);
+            playWin(outcome.payout);
+          }
+        });
       }, spinSettleMs);
     } catch (e) {
       if (id !== spinIdRef.current) return;
-      stopReelSpin();
-      setSpinPhase("idle");
-      spinLockedRef.current = false;
-      setError(e instanceof Error ? e.message : "Spin failed");
+      void invalidateSpinCaches(queryClient).finally(() => {
+        if (id !== spinIdRef.current) return;
+        stopReelSpin();
+        setSpinPhase("idle");
+        spinLockedRef.current = false;
+        setError(e instanceof Error ? e.message : "Spin failed");
+      });
     }
   };
 

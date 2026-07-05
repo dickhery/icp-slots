@@ -1,6 +1,10 @@
 import { createActor } from "@/backend";
 import { useActor } from "@caffeineai/core-infrastructure";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  type QueryClient,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import type {
@@ -182,10 +186,35 @@ export function useHouseBalance() {
   });
 }
 
+/** Refresh player and house caches after a spin resolves in the UI. */
+export async function invalidateSpinCaches(
+  queryClient: QueryClient,
+): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["balance"] }),
+    queryClient.invalidateQueries({ queryKey: ["spinHistory"] }),
+    queryClient.invalidateQueries({ queryKey: ["transactionHistory"] }),
+    queryClient.invalidateQueries({ queryKey: ["houseBalance"] }),
+    queryClient.invalidateQueries({ queryKey: ["houseStats"] }),
+  ]);
+}
+
+/** Optimistically reduce the cached balance when a spin is initiated. */
+export function applyOptimisticSpinDebit(
+  queryClient: QueryClient,
+  debitE8s: Tokens,
+): void {
+  void queryClient.cancelQueries({ queryKey: ["balance"] });
+  queryClient.setQueryData<Tokens>(["balance"], (current) => {
+    if (current === undefined) return current;
+    const next = current - debitE8s;
+    return next < 0n ? 0n : next;
+  });
+}
+
 /** Spin the reels with the chosen number of active paylines. */
 export function useSpin() {
   const { actor } = useBackend();
-  const queryClient = useQueryClient();
   return useCallback(
     async (
       activeLines: number,
@@ -199,16 +228,9 @@ export function useSpin() {
       if (result.__kind__ === "err") {
         throw new Error(result.err);
       }
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["balance"] }),
-        queryClient.invalidateQueries({ queryKey: ["spinHistory"] }),
-        queryClient.invalidateQueries({ queryKey: ["transactionHistory"] }),
-        queryClient.invalidateQueries({ queryKey: ["houseBalance"] }),
-        queryClient.invalidateQueries({ queryKey: ["houseStats"] }),
-      ]).catch(() => undefined);
       return result.ok;
     },
-    [actor, queryClient],
+    [actor],
   );
 }
 
