@@ -12,7 +12,7 @@ const VARIANT_CLASSES: Record<
     emoji: "text-[clamp(1.15rem,5.2vw,2.5rem)]",
     seven: "text-[clamp(1.4rem,6vw,2.85rem)]",
     bar: "text-[clamp(0.55rem,2.4vw,1rem)]",
-    horseshoe: "size-[clamp(1.2rem,5.4vw,2.55rem)]",
+    horseshoe: "size-[clamp(1.35rem,6vw,2.85rem)]",
   },
   compact: {
     emoji: "text-xs sm:text-sm",
@@ -38,24 +38,57 @@ function accentClass(accent: (typeof SYMBOL_META)[SlotSymbol]["accent"]) {
         : "text-primary";
 }
 
-/** Classic slot-machine horseshoe (no widely supported horseshoe emoji exists). */
+/**
+ * Classic slot-machine horseshoe: open U with inward-curving tips and nail holes.
+ * SVG is used because no horseshoe emoji renders consistently across devices.
+ */
 function HorseshoeIcon({ className }: { className?: string }) {
+  const armStroke = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 3.6,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
   return (
     <svg
       viewBox="0 0 32 32"
-      className={cn("symbol-glow shrink-0", className)}
+      className={cn("horseshoe-icon symbol-glow shrink-0", className)}
       aria-hidden="true"
     >
       <path
-        d="M8 11c0-4.5 3.6-7.5 8-7.5s8 3 8 7.5v4.5c0 4.8-3.2 8.2-8 9.8-4.8-1.6-8-5-8-9.8V11z"
+        className="horseshoe-body"
+        d="M9.2 26.4
+           C8.4 14.8, 10.2 6.8, 13.4 4.4
+           C14.5 3.6, 15.2 5.1, 14.4 6.8
+           C13.8 8.1, 12.6 8.8, 11.4 8.4"
+        {...armStroke}
+      />
+      <path
+        className="horseshoe-body"
+        d="M22.8 26.4
+           C23.6 14.8, 21.8 6.8, 18.6 4.4
+           C17.5 3.6, 16.8 5.1, 17.6 6.8
+           C18.2 8.1, 19.4 8.8, 20.6 8.4"
+        {...armStroke}
+      />
+      <circle
+        cx="11.1"
+        cy="5.8"
+        r="1.35"
         fill="none"
         stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        strokeWidth="1.2"
       />
-      <circle cx="11.5" cy="10" r="1.35" fill="currentColor" />
-      <circle cx="20.5" cy="10" r="1.35" fill="currentColor" />
+      <circle
+        cx="20.9"
+        cy="5.8"
+        r="1.35"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
     </svg>
   );
 }
