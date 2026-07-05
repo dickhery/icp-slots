@@ -39,56 +39,30 @@ function accentClass(accent: (typeof SYMBOL_META)[SlotSymbol]["accent"]) {
 }
 
 /**
- * Classic slot-machine horseshoe: open U with inward-curving tips and nail holes.
- * SVG is used because no horseshoe emoji renders consistently across devices.
+ * Classic slot-machine horseshoe with a solid cast-metal silhouette and nail holes.
+ * SVG keeps the symbol recognizable at every reel size and across platforms.
  */
 function HorseshoeIcon({ className }: { className?: string }) {
-  const armStroke = {
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 3.6,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-  };
-
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 48 48"
       className={cn("horseshoe-icon symbol-glow shrink-0", className)}
-      aria-hidden="true"
+      aria-label="Horseshoe"
+      role="img"
+      focusable="false"
     >
       <path
         className="horseshoe-body"
-        d="M9.2 26.4
-           C8.4 14.8, 10.2 6.8, 13.4 4.4
-           C14.5 3.6, 15.2 5.1, 14.4 6.8
-           C13.8 8.1, 12.6 8.8, 11.4 8.4"
-        {...armStroke}
+        d="M7 5 17 7v12c0 7.7 3 12.5 7 14.5 4-2 7-6.8 7-14.5V7l10-2v14c0 13.5-7.5 22-17 24C14.5 41 7 32.5 7 19Z"
       />
       <path
-        className="horseshoe-body"
-        d="M22.8 26.4
-           C23.6 14.8, 21.8 6.8, 18.6 4.4
-           C17.5 3.6, 16.8 5.1, 17.6 6.8
-           C18.2 8.1, 19.4 8.8, 20.6 8.4"
-        {...armStroke}
+        className="horseshoe-highlight"
+        d="M12 8v11c0 10.4 5.3 17.1 12 19.2C30.7 36.1 36 29.4 36 19V8"
       />
-      <circle
-        cx="11.1"
-        cy="5.8"
-        r="1.35"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
-      <circle
-        cx="20.9"
-        cy="5.8"
-        r="1.35"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.2"
-      />
+      <circle className="horseshoe-nail" cx="12" cy="13" r="1.75" />
+      <circle className="horseshoe-nail" cx="12.5" cy="22" r="1.75" />
+      <circle className="horseshoe-nail" cx="36" cy="13" r="1.75" />
+      <circle className="horseshoe-nail" cx="35.5" cy="22" r="1.75" />
     </svg>
   );
 }
