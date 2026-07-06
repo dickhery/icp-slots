@@ -218,10 +218,12 @@ export interface backendInterface {
     getHouseBalance(): Promise<Tokens>;
     getHouseDepositAccount(): Promise<DepositAccountView>;
     getHouseStats(): Promise<HouseStats>;
+    getMaintenanceMode(): Promise<boolean>;
     getOrCreatePlayer(): Promise<PlayerView>;
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
+    setMaintenanceMode(enabled: boolean): Promise<void>;
     spin(activeLines: bigint, betMultiplier: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;
@@ -482,6 +484,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getMaintenanceMode(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMaintenanceMode();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMaintenanceMode();
+            return result;
+        }
+    }
     async getOrCreatePlayer(): Promise<PlayerView> {
         if (this.processError) {
             try {
@@ -536,6 +552,18 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.isCallerAdmin();
             return result;
+        }
+    }
+    async setMaintenanceMode(arg0: boolean): Promise<void> {
+        if (this.processError) {
+            try {
+                await this.actor.setMaintenanceMode(arg0);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            await this.actor.setMaintenanceMode(arg0);
         }
     }
     async spin(arg0: bigint, arg1: bigint): Promise<SpinResult> {

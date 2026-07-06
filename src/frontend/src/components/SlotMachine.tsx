@@ -3,9 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Symbol as SlotSymbol } from "@/backend";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 import {
   applyOptimisticSpinDebit,
   invalidateSpinCaches,
+  useMaintenanceMode,
   useSpin,
   useSpinHistory,
 } from "@/hooks/use-backend";
@@ -41,11 +43,16 @@ type SpinPhase = "idle" | "paying" | "spinning";
  * The slot cabinet: five reels × three rows, up to nine paylines, and a
  * spin button that charges 0.01 ICP per active line.
  */
+const MAINTENANCE_SPIN_MESSAGE =
+  "The slot machine is in maintenance mode. Spins are temporarily unavailable.";
+
 export function SlotMachine() {
   const queryClient = useQueryClient();
   const balance = useBalance();
   const spin = useSpin();
   const { data: history = [] } = useSpinHistory();
+  const { data: maintenanceMode = false } = useMaintenanceMode();
+  const { isAdmin } = useAuth();
   const {
     muted,
     playPayment,
@@ -81,6 +88,7 @@ export function SlotMachine() {
   const wager = computeWager(activeLines, betMultiplier);
   const totalDebit = wager + ICP_LEDGER_FEE_E8S;
   const insufficientFunds = balance.e8s !== null && balance.e8s < totalDebit;
+  const maintenanceBlocksSpin = maintenanceMode && !isAdmin;
   const canSpin =
     balance.e8s !== null &&
     balance.e8s >= totalDebit &&
@@ -102,6 +110,10 @@ export function SlotMachine() {
 
   const handleSpin = async () => {
     if (spinLockedRef.current || !canSpin) return;
+    if (maintenanceBlocksSpin) {
+      setError(MAINTENANCE_SPIN_MESSAGE);
+      return;
+    }
     spinLockedRef.current = true;
     setError(null);
     setWon(false);
@@ -305,6 +317,14 @@ export function SlotMachine() {
           </p>
         ) : spinning ? (
           <p className="text-sm font-medium text-accent">Reels in motion…</p>
+        ) : maintenanceBlocksSpin ? (
+          <p
+            className="text-sm font-medium text-warning"
+            data-ocid="slot.maintenance_notice"
+            aria-live="polite"
+          >
+            {MAINTENANCE_SPIN_MESSAGE}
+          </p>
         ) : (
           <p className="text-sm text-muted-foreground">
             {balance.isError

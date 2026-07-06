@@ -31,6 +31,7 @@ mixin (
     var houseRetained : Common.Tokens;
   },
   counters : { var nextSpinId : Nat; var nextTxId : Nat },
+  maintenanceMode : { var enabled : Bool },
 ) {
   type IcrcAccount = { owner : Principal; subaccount : ?Blob };
 
@@ -659,6 +660,13 @@ mixin (
     if (not SlotGameLib.isValidBetMultiplier(betMultiplier)) {
       return #err("betMultiplier must be between 1 and 5");
     };
+    if (
+      maintenanceMode.enabled and not AccessControl.isAdmin(accessControlState, caller)
+    ) {
+      return #err(
+        "The slot machine is in maintenance mode. Spins are temporarily unavailable."
+      );
+    };
     let player = requirePlayer(caller);
     switch (acquirePlayerGuard(caller)) {
       case (#err(message)) return #err(message);
@@ -751,6 +759,17 @@ mixin (
   };
 
   // ---- Admin ----
+
+  public query func getMaintenanceMode() : async Bool {
+    maintenanceMode.enabled;
+  };
+
+  public shared ({ caller }) func setMaintenanceMode(enabled : Bool) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: admin only");
+    };
+    maintenanceMode.enabled := enabled;
+  };
 
   public query ({ caller }) func getHouseDepositAccount() : async SlotGame.DepositAccountView {
     if (not AccessControl.isAdmin(accessControlState, caller)) {

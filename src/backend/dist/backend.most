@@ -202,7 +202,9 @@ type UserRole__364273487 = {#admin; #guest; #user};
       {
         spinHistory :
           Map__166311111<Principal, List__653618698<SpinRecord__232338467>>
-      }
+      };
+  "20260704_120000_MaintenanceMode" :
+    (_old : {}) -> {maintenanceMode : {var enabled : Bool}}
 }
 actor  {
   stable accessControlState :
@@ -224,6 +226,7 @@ actor  {
       var creditedDefaultLedger : Tokens__151796392;
       var creditedHouseLedger : Tokens__151796392
     };
+  stable maintenanceMode : {var enabled : Bool};
   stable players :
     {
       var root : Node__305750417<UserId__653285603, Player__256311133>;

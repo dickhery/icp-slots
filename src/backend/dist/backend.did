@@ -131,6 +131,7 @@ service : {
   __aggregateStats: () -> (reserved) query;
   __counters: () -> (reserved) query;
   __houseBalance: () -> (reserved) query;
+  __maintenanceMode: () -> (reserved) query;
   __players: () -> (reserved) query;
   __spinHistory: () -> (reserved) query;
   __transactions: () -> (reserved) query;
@@ -145,10 +146,12 @@ service : {
   getHouseBalance: () -> (Tokens) query;
   getHouseDepositAccount: () -> (DepositAccountView) query;
   getHouseStats: () -> (HouseStats) query;
+  getMaintenanceMode: () -> (bool) query;
   getOrCreatePlayer: () -> (PlayerView);
   getSpinHistory: () -> (vec SpinRecord) query;
   getTransactionHistory: () -> (vec Transaction) query;
   isCallerAdmin: () -> (bool) query;
+  setMaintenanceMode: (enabled: bool) -> ();
   spin: (activeLines: nat, betMultiplier: nat) -> (SpinResult);
   syncDeposit: () -> (SyncDepositResult);
   syncHouseDeposit: () -> (SyncDepositResult);

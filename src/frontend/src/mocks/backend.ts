@@ -17,6 +17,7 @@ const SAMPLE_PRINCIPAL = Principal.fromText(
 
 let balance = 50_000_000n;
 let houseBalance = 12_000_000n;
+let maintenanceMode = false;
 const SPIN_COST = 1_000_000n;
 
 const REEL_SYMBOLS: Sym[] = [
@@ -164,6 +165,9 @@ export const mockBackend: backendInterface = {
       houseBalance,
     };
   },
+  async getMaintenanceMode() {
+    return maintenanceMode;
+  },
   async getOrCreatePlayer() {
     return { id: SAMPLE_PRINCIPAL, balance };
   },
@@ -204,7 +208,16 @@ export const mockBackend: backendInterface = {
   async isCallerAdmin() {
     return false;
   },
+  async setMaintenanceMode(enabled: boolean) {
+    maintenanceMode = enabled;
+  },
   async spin(activeLines: bigint, betMultiplier: bigint) {
+    if (maintenanceMode) {
+      return {
+        __kind__: "err" as const,
+        err: "The slot machine is in maintenance mode. Spins are temporarily unavailable.",
+      };
+    }
     const wager = SPIN_COST * activeLines * betMultiplier;
     balance -= wager;
     const reels = randomGrid();

@@ -162,10 +162,12 @@ export interface backendInterface {
     getHouseBalance(): Promise<Tokens>;
     getHouseDepositAccount(): Promise<DepositAccountView>;
     getHouseStats(): Promise<HouseStats>;
+    getMaintenanceMode(): Promise<boolean>;
     getOrCreatePlayer(): Promise<PlayerView>;
     getSpinHistory(): Promise<Array<SpinRecord>>;
     getTransactionHistory(): Promise<Array<Transaction>>;
     isCallerAdmin(): Promise<boolean>;
+    setMaintenanceMode(enabled: boolean): Promise<void>;
     spin(activeLines: bigint, betMultiplier: bigint): Promise<SpinResult>;
     syncDeposit(): Promise<SyncDepositResult>;
     syncHouseDeposit(): Promise<SyncDepositResult>;

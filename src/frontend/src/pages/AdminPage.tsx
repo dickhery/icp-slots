@@ -2,6 +2,7 @@ import { AdminTransferForm } from "@/components/AdminTransferForm";
 import { HouseBalanceCard } from "@/components/HouseBalanceCard";
 import { HouseDepositCard } from "@/components/HouseDepositCard";
 import { HouseStatsPanel } from "@/components/HouseStatsPanel";
+import { MaintenanceModeCard } from "@/components/MaintenanceModeCard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -73,10 +74,12 @@ export function AdminPage() {
           Admin Console
         </h1>
         <p className="text-sm text-muted-foreground">
-          Manage the house balance, review aggregate stats, and transfer
-          accumulated ICP to external accounts.
+          Manage maintenance mode, house balance, aggregate stats, and
+          transfers.
         </p>
       </div>
+
+      <MaintenanceModeCard />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <HouseBalanceCard />

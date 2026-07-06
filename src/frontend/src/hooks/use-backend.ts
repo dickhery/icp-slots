@@ -173,6 +173,34 @@ export function useHouseStats() {
   });
 }
 
+/** Whether the slot machine is in maintenance mode (query; cheap read). */
+export function useMaintenanceMode() {
+  const { actor, isFetching } = useBackend();
+  return useQuery<boolean>({
+    queryKey: ["maintenanceMode"],
+    queryFn: async () => {
+      if (!actor) throw new Error("Actor not ready");
+      return actor.getMaintenanceMode();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 30_000,
+  });
+}
+
+/** Admin: enable or disable maintenance mode. */
+export function useSetMaintenanceMode() {
+  const { actor } = useBackend();
+  const queryClient = useQueryClient();
+  return useCallback(
+    async (enabled: boolean): Promise<void> => {
+      if (!actor) throw new Error("Actor not ready");
+      await actor.setMaintenanceMode(enabled);
+      await queryClient.invalidateQueries({ queryKey: ["maintenanceMode"] });
+    },
+    [actor, queryClient],
+  );
+}
+
 /** House canister ICP balance (admin view). */
 export function useHouseBalance() {
   const { actor, isFetching } = useBackend();

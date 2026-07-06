@@ -29,6 +29,7 @@ actor Backend {
     var houseRetained : Common.Tokens;
   };
   let counters : { var nextSpinId : Nat; var nextTxId : Nat };
+  let maintenanceMode : { var enabled : Bool };
 
   include SlotGameApi(
     Backend,
@@ -39,5 +40,6 @@ actor Backend {
     houseBalance,
     aggregateStats,
     counters,
+    maintenanceMode,
   );
 };
