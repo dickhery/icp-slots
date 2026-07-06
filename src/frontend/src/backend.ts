@@ -204,6 +204,7 @@ export interface backendInterface {
     __aggregateStats(): Promise<any>;
     __counters(): Promise<any>;
     __houseBalance(): Promise<any>;
+    __maintenanceMode(): Promise<any>;
     __players(): Promise<any>;
     __spinHistory(): Promise<any>;
     __transactions(): Promise<any>;
@@ -285,6 +286,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.__houseBalance();
+            return result;
+        }
+    }
+    async __maintenanceMode(): Promise<any> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.__maintenanceMode();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.__maintenanceMode();
             return result;
         }
     }

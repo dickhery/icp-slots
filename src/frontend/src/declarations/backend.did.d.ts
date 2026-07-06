@@ -106,6 +106,7 @@ export interface _SERVICE {
   '__aggregateStats' : ActorMethod<[], any>,
   '__counters' : ActorMethod<[], any>,
   '__houseBalance' : ActorMethod<[], any>,
+  '__maintenanceMode' : ActorMethod<[], any>,
   '__players' : ActorMethod<[], any>,
   '__spinHistory' : ActorMethod<[], any>,
   '__transactions' : ActorMethod<[], any>,

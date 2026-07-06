@@ -154,6 +154,17 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    __accessControlState(): Promise<any>;
+    __aggregateStats(): Promise<any>;
+    __counters(): Promise<any>;
+    __houseBalance(): Promise<any>;
+    __maintenanceMode(): Promise<any>;
+    __players(): Promise<any>;
+    __spinHistory(): Promise<any>;
+    __transactions(): Promise<any>;
+    _initialize_access_control(): Promise<void>;
+    _internet_identity_sign_in_finish(): Promise<Result>;
+    _internet_identity_sign_in_start(): Promise<Uint8Array>;
     adminTransfer(to: AccountIdentifier, amount: Tokens): Promise<TransferResult>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     getBalance(): Promise<Tokens>;

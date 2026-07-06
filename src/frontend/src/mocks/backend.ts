@@ -120,6 +120,9 @@ export const mockBackend: backendInterface = {
   async __houseBalance() {
     return houseBalance;
   },
+  async __maintenanceMode() {
+    return { enabled: maintenanceMode };
+  },
   async __players() {
     return [];
   },
